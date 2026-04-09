@@ -1,0 +1,82 @@
+.splashContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  position: relative;
+}
+
+.logoWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.iconCircle {
+  width: 96px;
+  height: 96px;
+  background-color: #FFFFFF;
+  border-radius: var(--radius-full);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-lg);
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.icon {
+  color: var(--color-primary);
+}
+
+.brandName {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.tagline {
+  font-size: 1rem;
+  font-weight: 400;
+  opacity: 0.9;
+}
+
+.loader {
+  position: absolute;
+  bottom: 10%;
+  width: 40px;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.loader::after {
+  content: '';
+  display: block;
+  width: 50%;
+  height: 100%;
+  background-color: #FFFFFF;
+  animation: slide 1.5s infinite ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+@keyframes slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}

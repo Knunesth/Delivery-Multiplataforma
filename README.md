@@ -1,70 +1,73 @@
-# 📦 Projeto: App de Delivery
+# React + TypeScript + Vite
 
-## 📖 Sobre o Projeto
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Este projeto é a criação inicial de um aplicativo de delivery, desenvolvido com foco em organização, estrutura e funcionamento básico.
+Currently, two official plugins are available:
 
-A aplicação foi feita em duas versões:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-* **Mobile**, utilizando React Native
-* **Web**, utilizando React
+## React Compiler
 
----
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## 🚀 Funcionalidades
+## Expanding the ESLint configuration
 
-### 📱 Mobile
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-* Tela de boas-vindas
-* Listagem de produtos/restaurantes
-* Tela de detalhes do item
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-### 💻 Web
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
 
-* Página inicial
-* Listagem de produtos
-* Layout básico (header e conteúdo)
-
----
-
-## 🛠️ Tecnologias
-
-* React (Web)
-* React Native (Mobile)
-* JavaScript
-* VS Code
-* Git e GitHub
-
----
-
-## 📁 Estrutura
-
-O projeto foi organizado com:
-
-* Componentes reutilizáveis
-* Separação de telas/páginas
-* Pastas para assets
-
----
-
-## ▶️ Execução
-
-### Mobile
-
-```bash
-npm install
-npx expo start
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-### Web
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```bash
-npm install
-npm start
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
----
-
-## 📌 Observação
-
-O projeto é um protótipo inicial, com foco na estrutura e nas primeiras funcionalidades.

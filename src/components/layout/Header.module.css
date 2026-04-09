@@ -1,0 +1,60 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px var(--spacing-md);
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 60px;
+}
+
+.left, .right {
+  display: flex;
+  align-items: center;
+  min-width: 48px;
+}
+
+.right {
+  justify-content: flex-end;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-primary);
+}
+
+.leafIcon {
+  color: var(--color-primary);
+}
+
+.brandName {
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.5px;
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.iconBtn {
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.iconBtn:hover {
+  color: var(--color-primary);
+}
