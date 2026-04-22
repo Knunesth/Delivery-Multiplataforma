@@ -6,11 +6,13 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Mail, Lock, ChevronLeft } from 'lucide-react-native';
 import { Colors, Spacing, Radius } from '../../constants/Colors';
-import { login } from '../../services/api';
+import { login as apiLogin } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import { Alert } from 'react-native';
 
 export default function Login() {
   const router = useRouter();
+  const { login } = useAuth();
   const { width } = useWindowDimensions();
   const isLargeDevice = width > 500;
 
@@ -26,8 +28,8 @@ export default function Login() {
 
     setIsLoading(true);
     try {
-      const data = await login({ email, password });
-      // Salvar dados do usuário se necessário (ex: AsyncStorage)
+      const data = await apiLogin({ email, password });
+      await login(data);
       router.replace('/home');
     } catch (error: any) {
       Alert.alert('Erro no Login', error.message || 'Verifique suas credenciais');

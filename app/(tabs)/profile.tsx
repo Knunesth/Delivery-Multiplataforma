@@ -4,11 +4,18 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Leaf, Settings, MapPin, CreditCard, ChevronRight, LogOut, Shield, HelpCircle } from 'lucide-react-native';
 import { Colors, Spacing, Radius, Shadows } from '../../constants/Colors';
+import { useAuth } from '../../contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
 
 export default function Profile() {
   const router = useRouter();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/onboarding/login');
+  };
 
   const menuGroups = [
     {
@@ -47,12 +54,12 @@ export default function Profile() {
           <View style={styles.userInfo}>
             <View style={styles.avatarBorder}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>M</Text>
+                <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase() || 'U'}</Text>
               </View>
             </View>
             <View style={styles.userDetails}>
-              <Text style={styles.userName}>Maria Silva</Text>
-              <Text style={styles.userEmail}>maria.silva@email.com</Text>
+              <Text style={styles.userName}>{user?.name || 'Usuário'}</Text>
+              <Text style={styles.userEmail}>{user?.email || 'email@exemplo.com'}</Text>
               <View style={styles.memberBadge}>
                 <Leaf size={10} color={Colors.white} fill={Colors.white} />
                 <Text style={styles.memberText}>Membro Eco Platinum</Text>
@@ -106,7 +113,7 @@ export default function Profile() {
           {/* Logout Section */}
           <TouchableOpacity 
             style={styles.logoutBtn} 
-            onPress={() => router.replace('/')}
+            onPress={handleLogout}
           >
             <LogOut size={20} color={Colors.error} />
             <Text style={styles.logoutText}>Sair da Conta</Text>

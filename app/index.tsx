@@ -5,16 +5,24 @@ import { Leaf } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Animatable from 'react-native-animatable';
 import { Colors, Spacing, Radius } from '../constants/Colors';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Splash() {
   const router = useRouter();
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace('/onboarding/welcome');
-    }, 2800);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!isLoading) {
+      const timer = setTimeout(() => {
+        if (user) {
+          router.replace('/home');
+        } else {
+          router.replace('/onboarding/welcome');
+        }
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, user]);
 
   return (
     <LinearGradient
