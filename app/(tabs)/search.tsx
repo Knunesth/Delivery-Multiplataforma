@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, TextInput, FlatList, TouchableOpa
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search as SearchIcon, X, History, TrendingUp, Filter } from 'lucide-react-native';
 import { Colors, Spacing, Radius, Shadows } from '../../constants/Colors';
-import { MOCK_PRODUCTS } from '../../data/products';
+import { getProducts } from '../../services/api';
 import { ProductCard } from '../../components/ui/ProductCard';
 import { useCart } from '../../contexts/CartContext';
 
@@ -13,8 +13,20 @@ const TRENDING = ['EcoBurger', 'Suco Detox', 'Embalagem Biodegradável'];
 export default function Search() {
   const [query, setQuery] = useState('');
   const { addToCart } = useCart();
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredProducts = MOCK_PRODUCTS.filter(product => 
+  React.useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    const data = await getProducts();
+    setProducts(data);
+    setIsLoading(false);
+  };
+
+  const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(query.toLowerCase())
   );
 

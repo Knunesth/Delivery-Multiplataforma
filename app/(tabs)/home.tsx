@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bell, MapPin, Search as SearchIcon, Leaf, ChevronRight } from 'lucide-react-native';
 import { useCart } from '../../contexts/CartContext';
 import { ProductCard } from '../../components/ui/ProductCard';
 import { Colors, Spacing, Radius, Shadows } from '../../constants/Colors';
-import { MOCK_PRODUCTS } from '../../data/products';
+import { getProducts } from '../../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -22,6 +22,19 @@ export default function Home() {
   const router = useRouter();
   const { addToCart } = useCart();
   const [activeCategory, setActiveCategory] = useState('1');
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    setIsLoading(true);
+    const data = await getProducts();
+    setProducts(data);
+    setIsLoading(false);
+  };
 
   const handleAddToCart = (product: any) => {
     addToCart({
@@ -131,13 +144,17 @@ export default function Home() {
             </TouchableOpacity>
           </View>
           <View style={styles.productsGrid}>
-            {MOCK_PRODUCTS.map(product => (
-              <ProductCard 
-                key={product.id} 
-                {...product} 
-                onAdd={() => handleAddToCart(product)} 
-              />
-            ))}
+            {isLoading ? (
+              <ActivityIndicator size="large" color={Colors.primary} style={{ flex: 1, marginTop: 20 }} />
+            ) : (
+              products.map(product => (
+                <ProductCard 
+                  key={product.id} 
+                  {...product} 
+                  onAdd={() => handleAddToCart(product)} 
+                />
+              ))
+            )}
           </View>
         </View>
       </ScrollView>
