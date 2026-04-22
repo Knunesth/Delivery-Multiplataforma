@@ -1,20 +1,39 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { Mail, Lock, ChevronLeft } from 'lucide-react-native';
 import { Colors, Spacing, Radius } from '../../constants/Colors';
+import { login } from '../../services/api';
+import { Alert } from 'react-native';
 
 export default function Login() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isLargeDevice = width > 500;
 
-  const handleLogin = () => {
-    // In a real app, logic would go here
-    router.replace('/home');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Erro', 'Preencha todos os campos');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const data = await login({ email, password });
+      // Salvar dados do usuário se necessário (ex: AsyncStorage)
+      router.replace('/home');
+    } catch (error: any) {
+      Alert.alert('Erro no Login', error.message || 'Verifique suas credenciais');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -42,12 +61,17 @@ export default function Login() {
               placeholder="seu@email.com" 
               leftIcon={<Mail size={20} color={Colors.textTertiary} />} 
               keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
             />
             <Input 
               label="Senha" 
               placeholder="Sua senha" 
               secureTextEntry
               leftIcon={<Lock size={20} color={Colors.textTertiary} />} 
+              value={password}
+              onChangeText={setPassword}
             />
             
             <TouchableOpacity style={styles.forgotPassword}>
@@ -55,8 +79,8 @@ export default function Login() {
             </TouchableOpacity>
 
             <View style={styles.actions}>
-              <Button fullWidth size="lg" onPress={handleLogin}>
-                Entrar
+              <Button fullWidth size="lg" onPress={handleLogin} disabled={isLoading}>
+                {isLoading ? <ActivityIndicator color={Colors.white} /> : 'Entrar'}
               </Button>
             </View>
           </View>

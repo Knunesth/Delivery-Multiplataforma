@@ -3,7 +3,13 @@ const db = require('../config/db');
 exports.getAllProducts = async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM products');
-    res.json(rows);
+    const formattedRows = rows.map(row => ({
+      ...row,
+      price: Number(row.price),
+      rating: Number(row.rating),
+      ingredients: typeof row.ingredients === 'string' ? JSON.parse(row.ingredients) : row.ingredients
+    }));
+    res.json(formattedRows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -13,7 +19,15 @@ exports.getProductById = async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM products WHERE id = ?', [req.params.id]);
     if (rows.length === 0) return res.status(404).json({ message: 'Product not found' });
-    res.json(rows[0]);
+    
+    const row = rows[0];
+    const formattedRow = {
+      ...row,
+      price: Number(row.price),
+      rating: Number(row.rating),
+      ingredients: typeof row.ingredients === 'string' ? JSON.parse(row.ingredients) : row.ingredients
+    };
+    res.json(formattedRow);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

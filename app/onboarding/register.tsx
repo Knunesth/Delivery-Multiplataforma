@@ -1,19 +1,40 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { User, Mail, Lock, ChevronLeft } from 'lucide-react-native';
 import { Colors, Spacing, Radius } from '../../constants/Colors';
+import { register } from '../../services/api';
 
 export default function Register() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const isLargeDevice = width > 500;
 
-  const handleRegister = () => {
-    router.replace('/home');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleRegister = async () => {
+    if (!name || !email || !password) {
+      Alert.alert('Erro', 'Preencha todos os campos');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await register({ name, email, password });
+      Alert.alert('Sucesso', 'Conta criada com sucesso!', [
+        { text: 'OK', onPress: () => router.replace('/onboarding/login') }
+      ]);
+    } catch (error: any) {
+      Alert.alert('Erro no Cadastro', error.message || 'Não foi possível criar a conta');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -40,18 +61,25 @@ export default function Register() {
               label="Nome Completo" 
               placeholder="Seu nome" 
               leftIcon={<User size={20} color={Colors.textTertiary} />} 
+              value={name}
+              onChangeText={setName}
             />
             <Input 
               label="E-mail" 
               placeholder="seu@email.com" 
               leftIcon={<Mail size={20} color={Colors.textTertiary} />} 
               keyboardType="email-address"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
             />
             <Input 
               label="Senha" 
               placeholder="Crie uma senha forte" 
               secureTextEntry
               leftIcon={<Lock size={20} color={Colors.textTertiary} />} 
+              value={password}
+              onChangeText={setPassword}
             />
             
             <View style={styles.termsContainer}>
@@ -63,8 +91,8 @@ export default function Register() {
             </View>
 
             <View style={styles.actions}>
-              <Button fullWidth size="lg" onPress={handleRegister}>
-                Criar Conta
+              <Button fullWidth size="lg" onPress={handleRegister} disabled={isLoading}>
+                {isLoading ? <ActivityIndicator color={Colors.white} /> : 'Criar Conta'}
               </Button>
             </View>
           </View>

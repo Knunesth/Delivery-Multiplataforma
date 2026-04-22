@@ -45,7 +45,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, ratin
         )}
         <View style={styles.ratingBadge}>
           <Star size={10} color={Colors.secondary} fill={Colors.secondary} />
-          <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
+          <Text style={styles.ratingText}>{Number(rating || 0).toFixed(1)}</Text>
         </View>
       </View>
       
