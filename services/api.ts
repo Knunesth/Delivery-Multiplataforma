@@ -93,3 +93,58 @@ export async function register(userData: any) {
     throw error;
   }
 }
+
+export async function getAddresses(userId: number) {
+  try {
+    const response = await fetch(`${API_URL}/addresses/user/${userId}`);
+    if (!response.ok) throw new Error('Falha ao buscar endereços');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro na API de endereços:', error);
+    return [];
+  }
+}
+
+export async function createAddress(addressData: any) {
+  try {
+    const response = await fetch(`${API_URL}/addresses`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(addressData),
+    });
+    if (!response.ok) throw new Error('Falha ao criar endereço');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao criar endereço:', error);
+    throw error;
+  }
+}
+
+export async function deleteAddress(id: number) {
+  try {
+    const response = await fetch(`${API_URL}/addresses/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Falha ao deletar endereço');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao deletar endereço:', error);
+    throw error;
+  }
+}
+
+export async function setDefaultAddress(id: number, userId: number) {
+  try {
+    const response = await fetch(`${API_URL}/addresses/default`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, userId }),
+    });
+    if (!response.ok) throw new Error('Falha ao definir endereço padrão');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao definir endereço padrão:', error);
+    throw error;
+  }
+}
+

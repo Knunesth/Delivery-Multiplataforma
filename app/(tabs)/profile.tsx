@@ -91,7 +91,10 @@ export default function Profile() {
                   <TouchableOpacity 
                     key={item.id} 
                     style={styles.menuItem}
-                    onPress={() => item.id === 'orders' ? router.push('/orders') : null}
+                    onPress={() => {
+                      if (item.id === 'orders') router.push('/orders');
+                      if (item.id === 'addresses') router.push('/addresses');
+                    }}
                   >
                     <View style={styles.menuIconContainer}>
                       {item.icon}

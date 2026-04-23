@@ -41,3 +41,17 @@ CREATE TABLE IF NOT EXISTS order_items (
   FOREIGN KEY (order_id) REFERENCES orders(id),
   FOREIGN KEY (product_id) REFERENCES products(id)
 );
+
+CREATE TABLE IF NOT EXISTS addresses (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  label VARCHAR(100) NOT NULL, -- ex: Home, Work
+  street VARCHAR(255) NOT NULL,
+  number VARCHAR(50) NOT NULL,
+  complement VARCHAR(100),
+  neighborhood VARCHAR(100) NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  is_default BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+

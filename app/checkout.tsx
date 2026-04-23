@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, CheckCircle2, Leaf } from 'lucide-react-native';
+import { ChevronLeft, CheckCircle2, Leaf, MapPin } from 'lucide-react-native';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useAddress } from '../contexts/AddressContext';
 import { createOrder } from '../services/api';
 import { Colors, Spacing, Radius, Shadows } from '../constants/Colors';
 import { Button } from '../components/ui/Button';
@@ -12,6 +13,7 @@ export default function Checkout() {
   const router = useRouter();
   const { items, clearCart } = useCart();
   const { user } = useAuth();
+  const { selectedAddress } = useAddress();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -71,6 +73,35 @@ export default function Checkout() {
       </View>
 
       <View style={styles.content}>
+        <View style={styles.addressSection}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Endereço de Entrega</Text>
+            <TouchableOpacity onPress={() => router.push('/addresses')}>
+              <Text style={styles.changeText}>Alterar</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.addressCard}>
+            <View style={styles.addressIconBox}>
+              <MapPin size={20} color={Colors.primary} />
+            </View>
+            <View style={styles.addressInfo}>
+              {selectedAddress ? (
+                <>
+                  <Text style={styles.addressLabel}>{selectedAddress.label}</Text>
+                  <Text style={styles.addressText}>
+                    {selectedAddress.street}, {selectedAddress.number}
+                  </Text>
+                  <Text style={styles.addressSubtext}>
+                    {selectedAddress.neighborhood}, {selectedAddress.city}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.addressLabel}>Nenhum endereço selecionado</Text>
+              )}
+            </View>
+          </View>
+        </View>
+
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Resumo do Pagamento</Text>
           <View style={styles.row}>
@@ -145,6 +176,54 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     ...Shadows.medium,
     marginBottom: Spacing.xl,
+  },
+  addressSection: {
+    marginBottom: Spacing.xl,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  changeText: {
+    color: Colors.primary,
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  addressCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    padding: Spacing.lg,
+    borderRadius: Radius.lg,
+    ...Shadows.medium,
+  },
+  addressIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.md,
+  },
+  addressInfo: {
+    flex: 1,
+  },
+  addressLabel: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  addressText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  addressSubtext: {
+    fontSize: 12,
+    color: Colors.textTertiary,
   },
   cardTitle: {
     fontSize: 16,
