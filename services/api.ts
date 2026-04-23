@@ -18,6 +18,18 @@ export async function getProducts() {
   }
 }
 
+export async function getProductById(id: string | number) {
+  try {
+    const response = await fetch(`${API_URL}/products/${id}`);
+    if (!response.ok) throw new Error('Falha ao buscar produto');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro na API de detalhes do produto:', error);
+    throw error;
+  }
+}
+
+
 export async function createOrder(orderData: any) {
   try {
     const response = await fetch(`${API_URL}/orders`, {
