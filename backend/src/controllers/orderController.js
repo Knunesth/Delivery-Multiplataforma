@@ -42,3 +42,48 @@ exports.getOrderById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getUserOrders = async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const [results] = await db.query(`
+      SELECT 
+        o.id as orderId, o.total, o.status, o.created_at,
+        oi.id as itemId, oi.product_id, oi.quantity, oi.price as itemPrice,
+        p.name as productName, p.imageUrl
+      FROM orders o
+      LEFT JOIN order_items oi ON o.id = oi.order_id
+      LEFT JOIN products p ON oi.product_id = p.id
+      WHERE o.user_id = ?
+      ORDER BY o.created_at DESC
+    `, [userId]);
+
+    // Group items by order
+    const ordersMap = results.reduce((acc, row) => {
+      if (!acc[row.orderId]) {
+        acc[row.orderId] = {
+          id: row.orderId,
+          total: row.total,
+          status: row.status,
+          date: row.created_at,
+          items: []
+        };
+      }
+      if (row.itemId) {
+        acc[row.orderId].items.push({
+          id: row.itemId,
+          productId: row.product_id,
+          name: row.productName,
+          quantity: row.quantity,
+          price: row.itemPrice,
+          imageUrl: row.imageUrl
+        });
+      }
+      return acc;
+    }, {});
+
+    res.json(Object.values(ordersMap));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

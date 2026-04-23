@@ -21,7 +21,7 @@ export default function Profile() {
     {
       title: 'Minha Conta',
       items: [
-        { id: 'orders', label: 'Meus Pedidos Sustentáveis', icon: <Leaf size={18} color={Colors.primary} />, badge: '5' },
+        { id: 'orders', label: 'Meus Pedidos Sustentáveis', icon: <Leaf size={18} color={Colors.textSecondary} />},
         { id: 'addresses', label: 'Meus Endereços', icon: <MapPin size={18} color={Colors.textSecondary} /> },
         { id: 'payments', label: 'Formas de Pagamento', icon: <CreditCard size={18} color={Colors.textSecondary} /> },
       ]
@@ -46,9 +46,6 @@ export default function Profile() {
         >
           <View style={styles.headerTop}>
             <Text style={styles.headerTitle}>Meu Perfil</Text>
-            <TouchableOpacity style={styles.settingsIcon}>
-              <Settings size={22} color={Colors.white} />
-            </TouchableOpacity>
           </View>
 
           <View style={styles.userInfo}>
@@ -91,7 +88,11 @@ export default function Profile() {
               <Text style={styles.groupTitle}>{group.title}</Text>
               <View style={styles.menuList}>
                 {group.items.map((item, idx) => (
-                  <TouchableOpacity key={item.id} style={styles.menuItem}>
+                  <TouchableOpacity 
+                    key={item.id} 
+                    style={styles.menuItem}
+                    onPress={() => item.id === 'orders' ? router.push('/orders') : null}
+                  >
                     <View style={styles.menuIconContainer}>
                       {item.icon}
                     </View>
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
   },
   headerTop: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.xl,
   },

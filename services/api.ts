@@ -34,6 +34,18 @@ export async function createOrder(orderData: any) {
     throw error;
   }
 }
+
+export async function getUserOrders(userId: number) {
+  try {
+    const response = await fetch(`${API_URL}/orders/user/${userId}`);
+    if (!response.ok) throw new Error('Falha ao buscar pedidos');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro na API de busca de pedidos:', error);
+    return [];
+  }
+}
+
 export async function login(credentials: any) {
   try {
     const response = await fetch(`${API_URL}/auth/login`, {

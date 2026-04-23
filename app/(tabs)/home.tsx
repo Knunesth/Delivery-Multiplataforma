@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Image, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Bell, MapPin, Search as SearchIcon, Leaf, ChevronRight } from 'lucide-react-native';
+import { Bell, Search as SearchIcon, Leaf, ChevronRight } from 'lucide-react-native';
 import { useCart } from '../../contexts/CartContext';
 import { ProductCard } from '../../components/ui/ProductCard';
 import { Colors, Spacing, Radius, Shadows } from '../../constants/Colors';
@@ -50,31 +50,21 @@ export default function Home() {
     <SafeAreaView style={styles.container}>
       {/* Premium Header */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.locationContainer}>
-            <View style={styles.locationIconBox}>
-              <MapPin size={18} color={Colors.white} />
-            </View>
-            <View style={styles.locationTextContainer}>
-              <Text style={styles.locationLabel}>Entregar em</Text>
-              <Text style={styles.locationValue} numberOfLines={1}>Av. Paulista, 1000</Text>
-            </View>
-          </View>
+        <View style={styles.searchContainer}>
+          <TouchableOpacity 
+            style={styles.searchBar} 
+            onPress={() => router.push('/search')}
+            activeOpacity={0.9}
+          >
+            <SearchIcon size={20} color={Colors.textTertiary} />
+            <Text style={styles.searchPlaceholder}>O que você quer pedir hoje?</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.notificationBtn}>
             <Bell size={24} color={Colors.textPrimary} />
             <View style={styles.badge} />
           </TouchableOpacity>
         </View>
-
-        {/* Search Bar */}
-        <TouchableOpacity 
-          style={styles.searchBar} 
-          onPress={() => router.push('/search')}
-          activeOpacity={0.9}
-        >
-          <SearchIcon size={20} color={Colors.textTertiary} />
-          <Text style={styles.searchPlaceholder}>O que você quer pedir hoje?</Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -175,41 +165,15 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: Radius.xl,
     ...Shadows.medium,
   },
-  headerTop: {
+  searchContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: Spacing.md,
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  locationIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  locationTextContainer: {
-    marginLeft: Spacing.sm,
-  },
-  locationLabel: {
-    fontSize: 11,
-    color: Colors.textTertiary,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  locationValue: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: Colors.textPrimary,
+    gap: Spacing.sm,
   },
   notificationBtn: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     borderRadius: Radius.md,
     backgroundColor: Colors.surfaceHover,
     alignItems: 'center',
@@ -227,13 +191,13 @@ const styles = StyleSheet.create({
     borderColor: Colors.white,
   },
   searchBar: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.surfaceHover,
     height: 48,
     borderRadius: Radius.md,
     paddingHorizontal: Spacing.md,
-    marginTop: Spacing.sm,
   },
   searchPlaceholder: {
     marginLeft: Spacing.sm,

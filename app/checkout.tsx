@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicat
 import { useRouter } from 'expo-router';
 import { ChevronLeft, CheckCircle2, Leaf } from 'lucide-react-native';
 import { useCart } from '../contexts/CartContext';
+import { useAuth } from '../contexts/AuthContext';
 import { createOrder } from '../services/api';
 import { Colors, Spacing, Radius, Shadows } from '../constants/Colors';
 import { Button } from '../components/ui/Button';
@@ -10,6 +11,7 @@ import { Button } from '../components/ui/Button';
 export default function Checkout() {
   const router = useRouter();
   const { items, clearCart } = useCart();
+  const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -20,9 +22,8 @@ export default function Checkout() {
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
     try {
-      // Por enquanto usamos userId 1 fixo (simulando usuário logado)
       await createOrder({
-        userId: 1,
+        userId: user?.id || 1,
         items: items,
         total: total
       });
