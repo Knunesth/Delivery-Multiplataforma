@@ -26,10 +26,12 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS orders (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT,
+  address_id INT,
   total DECIMAL(10, 2) NOT NULL,
   status VARCHAR(50) DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (address_id) REFERENCES addresses(id)
 );
 
 CREATE TABLE IF NOT EXISTS order_items (

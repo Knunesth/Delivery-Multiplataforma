@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 // Se estiver rodando no navegador, usa localhost.
 // Se estiver rodando no celular real ou emulador, precisa do IP da sua máquina.
 // Substitua o IP abaixo pelo IP da sua máquina (ex: 192.168.1.10) para testar no celular real.
-const localhost = '10.15.107.56'; // Tente trocar pelo seu IP se o localhost falhar no celular
+const localhost = '10.15.107.68'; // Tente trocar pelo seu IP se o localhost falhar no celular
 
 export const API_URL = `http://${localhost}:3000/api`;
 

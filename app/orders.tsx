@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Package, Clock } from 'lucide-react-native';
+import { ChevronLeft, Package, Clock, MapPin } from 'lucide-react-native';
 import { getUserOrders } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { Colors, Spacing, Radius, Shadows } from '../constants/Colors';
@@ -88,6 +88,29 @@ export default function Orders() {
                   </Text>
                 </View>
               </View>
+
+              {order.address && (
+                <View style={styles.addressSection}>
+                  <View style={styles.addressHeader}>
+                    <MapPin size={16} color={Colors.primary} />
+                    <Text style={styles.addressLabel}>Entregue em:</Text>
+                  </View>
+                  <View style={styles.addressContent}>
+                    <Text style={styles.addressTitle}>{order.address.label}</Text>
+                    <Text style={styles.addressText}>
+                      {order.address.street}, {order.address.number}
+                    </Text>
+                    {order.address.complement && (
+                      <Text style={styles.addressText}>
+                        {order.address.complement}
+                      </Text>
+                    )}
+                    <Text style={styles.addressText}>
+                      {order.address.neighborhood}, {order.address.city}
+                    </Text>
+                  </View>
+                </View>
+              )}
 
               <View style={styles.itemsContainer}>
                 {order.items.map((item: any, index: number) => (
@@ -224,6 +247,38 @@ const styles = StyleSheet.create({
   },
   statusTextSuccess: {
     color: Colors.primary,
+  },
+  addressSection: {
+    backgroundColor: '#F0F7FF',
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.primary,
+    borderRadius: Radius.md,
+    padding: Spacing.md,
+    marginVertical: Spacing.md,
+  },
+  addressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  addressLabel: {
+    marginLeft: Spacing.sm,
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  addressContent: {
+    paddingLeft: Spacing.md,
+  },
+  addressTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  addressText: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
   itemsContainer: {
     paddingVertical: Spacing.md,

@@ -16,6 +16,7 @@ export default function Checkout() {
   const { selectedAddress } = useAddress();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [orderAddress, setOrderAddress] = useState<any>(null);
 
   const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const deliveryFee = 5.00;
@@ -27,9 +28,11 @@ export default function Checkout() {
       await createOrder({
         userId: user?.id || 1,
         items: items,
-        total: total
+        total: total,
+        addressId: selectedAddress?.id
       });
       
+      setOrderAddress(selectedAddress);
       setIsSuccess(true);
       clearCart();
     } catch (error) {
@@ -50,6 +53,30 @@ export default function Checkout() {
           <Text style={styles.successSubtitle}>
             Seu pedido sustentável está sendo preparado e chegará em breve.
           </Text>
+          
+          {orderAddress && (
+            <View style={styles.successAddressCard}>
+              <View style={styles.successAddressHeader}>
+                <MapPin size={18} color={Colors.primary} />
+                <Text style={styles.successAddressLabel}>Entregue em:</Text>
+              </View>
+              <View style={styles.successAddressContent}>
+                <Text style={styles.successAddressTitle}>{orderAddress.label}</Text>
+                <Text style={styles.successAddressText}>
+                  {orderAddress.street}, {orderAddress.number}
+                </Text>
+                {orderAddress.complement && (
+                  <Text style={styles.successAddressText}>
+                    {orderAddress.complement}
+                  </Text>
+                )}
+                <Text style={styles.successAddressText}>
+                  {orderAddress.neighborhood}, {orderAddress.city}
+                </Text>
+              </View>
+            </View>
+          )}
+          
           <View style={styles.ecoBadge}>
             <Leaf size={16} color={Colors.primaryDark} />
             <Text style={styles.ecoBadgeText}>Você salvou 200g de CO2 hoje!</Text>
@@ -333,6 +360,41 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: Colors.primaryDark,
+  },
+  successAddressCard: {
+    backgroundColor: '#F0F7FF',
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
+    borderRadius: Radius.md,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+    width: '100%',
+  },
+  successAddressHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  successAddressLabel: {
+    marginLeft: Spacing.md,
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  successAddressContent: {
+    paddingLeft: Spacing.lg,
+  },
+  successAddressTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    marginBottom: Spacing.xs,
+  },
+  successAddressText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.xs,
+    lineHeight: 18,
   },
   homeBtn: {
     marginTop: Spacing.xl,
