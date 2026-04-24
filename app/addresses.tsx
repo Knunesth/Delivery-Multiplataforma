@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Modal, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator, TextInput, Modal, Alert, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Plus, MapPin, Trash2, Home, Briefcase, Check } from 'lucide-react-native';
+import { ChevronLeft, Plus, MapPin, Trash2, Home, Briefcase, Check, Pencil } from 'lucide-react-native';
 import { getAddresses, createAddress, deleteAddress, setDefaultAddress } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useAddress } from '../contexts/AddressContext';
@@ -11,10 +11,17 @@ import { Button } from '../components/ui/Button';
 export default function Addresses() {
   const router = useRouter();
   const { user } = useAuth();
-  const { setSelectedAddress, loadAddresses: refreshGlobalAddresses } = useAddress();
-  const [addresses, setAddresses] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { 
+    addresses, 
+    loading, 
+    setSelectedAddress, 
+    createAddress: contextCreateAddress, 
+    updateAddress: contextUpdateAddress,
+    deleteAddress: contextDeleteAddress,
+    setDefaultAddress: contextSetDefaultAddress
+  } = useAddress();
   const [modalVisible, setModalVisible] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   
   // Form State
   const [label, setLabel] = useState('Home');
@@ -25,84 +32,97 @@ export default function Addresses() {
   const [city, setCity] = useState('');
   const [isDefault, setIsDefault] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadAddresses();
-    }
-  }, [user]);
+  // Removido loadAddresses local para usar o do contexto
 
-  const loadAddresses = async () => {
-    try {
-      setLoading(true);
-      const data = await getAddresses(user.id);
-      setAddresses(data);
-    } catch (error) {
-      console.error('Erro ao carregar endereços:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateAddress = async () => {
+  const handleSaveAddress = async () => {
     if (!street || !number || !neighborhood || !city) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos obrigatórios.');
       return;
     }
 
+    const addressData = {
+      userId: user.id,
+      label,
+      street,
+      number,
+      complement,
+      neighborhood,
+      city,
+      isDefault
+    };
+
     try {
-      await createAddress({
-        userId: user.id,
-        label,
-        street,
-        number,
-        complement,
-        neighborhood,
-        city,
-        isDefault
-      });
+      if (editingId) {
+        await contextUpdateAddress(editingId, addressData);
+      } else {
+        await contextCreateAddress(addressData);
+      }
       setModalVisible(false);
       resetForm();
-      loadAddresses();
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar o endereço.');
     }
   };
 
   const handleDeleteAddress = (id: number) => {
-    Alert.alert(
-      'Deletar Endereço',
-      'Tem certeza que deseja remover este endereço?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Remover', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteAddress(id);
-              loadAddresses();
-            } catch (error) {
-              Alert.alert('Erro', 'Não foi possível deletar o endereço.');
-            }
+    console.log('Botão Deletar clicado para o ID:', id);
+    
+    const performDelete = async () => {
+      try {
+        await contextDeleteAddress(id);
+      } catch (error) {
+        Alert.alert('Erro', 'Não foi possível deletar o endereço.');
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirmed = window.confirm('Tem certeza que deseja remover este endereço?');
+      if (confirmed) {
+        performDelete();
+      }
+    } else {
+      Alert.alert(
+        'Deletar Endereço',
+        'Tem certeza que deseja remover este endereço?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { 
+            text: 'Remover', 
+            style: 'destructive',
+            onPress: performDelete
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
+  };
+
+  const handleEditAddress = (address: any) => {
+    setEditingId(address.id);
+    setLabel(address.label);
+    setStreet(address.street);
+    setNumber(address.number);
+    setComplement(address.complement || '');
+    setNeighborhood(address.neighborhood);
+    setCity(address.city);
+    setIsDefault(address.is_default);
+    setModalVisible(true);
   };
 
   const handleSelectAddress = async (address: any) => {
     setSelectedAddress(address);
     try {
-      await setDefaultAddress(address.id, user.id);
-      await refreshGlobalAddresses();
-      router.back();
+      await contextSetDefaultAddress(address.id);
+      if (router.canGoBack()) router.back();
+      else router.replace('/home');
     } catch (error) {
       console.error(error);
-      router.back();
+      if (router.canGoBack()) router.back();
+      else router.replace('/home');
     }
   };
 
   const resetForm = () => {
+    setEditingId(null);
     setLabel('Home');
     setStreet('');
     setNumber('');
@@ -121,7 +141,10 @@ export default function Addresses() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity 
+          onPress={() => router.canGoBack() ? router.back() : router.replace('/home')} 
+          style={styles.backBtn}
+        >
           <ChevronLeft size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Meus Endereços</Text>
@@ -146,41 +169,57 @@ export default function Addresses() {
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {addresses.map((address) => (
-            <TouchableOpacity 
-              key={address.id} 
-              style={[styles.addressCard, address.is_default && styles.defaultCard]}
-              onPress={() => handleSelectAddress(address)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.addressIconBox}>
-                {getIcon(address.label)}
-              </View>
-              <View style={styles.addressInfo}>
-                <View style={styles.addressHeader}>
-                  <Text style={styles.addressLabel}>{address.label}</Text>
-                  {address.is_default && (
-                    <View style={styles.defaultBadge}>
-                      <Text style={styles.defaultBadgeText}>Padrão</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={styles.addressText}>
-                  {address.street}, {address.number}
-                </Text>
-                {address.complement && (
-                  <Text style={styles.addressSubtext}>{address.complement}</Text>
-                )}
-                <Text style={styles.addressSubtext}>
-                  {address.neighborhood}, {address.city}
-                </Text>
-              </View>
+            <View key={address.id} style={[styles.addressCard, address.is_default && styles.defaultCard]}>
               <TouchableOpacity 
-                style={styles.deleteBtn} 
-                onPress={() => handleDeleteAddress(address.id)}
+                style={styles.addressMain}
+                onPress={() => handleSelectAddress(address)}
+                activeOpacity={0.7}
               >
-                <Trash2 size={20} color={Colors.error} />
+                <View style={styles.addressIconBox}>
+                  {getIcon(address.label)}
+                </View>
+                <View style={styles.addressInfo}>
+                  <View style={styles.addressHeader}>
+                    <Text style={styles.addressLabel}>{address.label}</Text>
+                    {address.is_default && (
+                      <View style={styles.defaultBadge}>
+                        <Text style={styles.defaultBadgeText}>Padrão</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={styles.addressText}>
+                    {address.street}, {address.number}
+                  </Text>
+                  {address.complement && (
+                    <Text style={styles.addressSubtext}>{address.complement}</Text>
+                  )}
+                  <Text style={styles.addressSubtext}>
+                    {address.neighborhood}, {address.city}
+                  </Text>
+                </View>
               </TouchableOpacity>
-            </TouchableOpacity>
+              
+              <View style={[styles.actions, { zIndex: 999 }]}>
+                <TouchableOpacity 
+                  style={styles.actionBtn} 
+                  onPress={() => {
+                    console.log('Clique no botão Editar');
+                    handleEditAddress(address);
+                  }}
+                >
+                  <Pencil size={18} color={Colors.textSecondary} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.actionBtn, { marginLeft: 8 }]} 
+                  onPress={() => {
+                    console.log('Clique no botão Deletar para o ID:', address.id);
+                    handleDeleteAddress(address.id);
+                  }}
+                >
+                  <Trash2 size={18} color={Colors.error} />
+                </TouchableOpacity>
+              </View>
+            </View>
           ))}
         </ScrollView>
       )}
@@ -195,8 +234,8 @@ export default function Addresses() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Novo Endereço</Text>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Text style={styles.modalTitle}>{editingId ? 'Editar Endereço' : 'Novo Endereço'}</Text>
+              <TouchableOpacity onPress={() => { setModalVisible(false); resetForm(); }}>
                 <Text style={styles.closeBtn}>Cancelar</Text>
               </TouchableOpacity>
             </View>
@@ -265,8 +304,8 @@ export default function Addresses() {
                 <Text style={styles.defaultToggleText}>Definir como endereço padrão</Text>
               </TouchableOpacity>
 
-              <Button fullWidth style={styles.saveBtn} onPress={handleCreateAddress}>
-                Salvar Endereço
+              <Button fullWidth style={styles.saveBtn} onPress={handleSaveAddress}>
+                {editingId ? 'Atualizar Endereço' : 'Salvar Endereço'}
               </Button>
             </ScrollView>
           </View>
@@ -341,12 +380,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: Colors.white,
     borderRadius: Radius.lg,
-    padding: Spacing.xl,
     marginBottom: Spacing.md,
     alignItems: 'center',
     ...Shadows.medium,
     borderWidth: 2,
     borderColor: 'transparent',
+    overflow: 'hidden',
+  },
+  addressMain: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.xl,
+  },
+  actions: {
+    flexDirection: 'row',
+    paddingRight: Spacing.lg,
+  },
+  actionBtn: {
+    padding: 10,
+    backgroundColor: Colors.surfaceHover,
+    borderRadius: Radius.full,
   },
   defaultCard: {
     borderColor: Colors.primary,
@@ -396,9 +450,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textSecondary,
     marginTop: 2,
-  },
-  deleteBtn: {
-    padding: 8,
   },
   modalOverlay: {
     flex: 1,

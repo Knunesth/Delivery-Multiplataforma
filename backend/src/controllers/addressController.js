@@ -27,12 +27,38 @@ exports.createAddress = async (req, res) => {
   }
 };
 
+exports.updateAddress = async (req, res) => {
+  const { id } = req.params;
+  const { label, street, number, complement, neighborhood, city, isDefault, userId } = req.body;
+  try {
+    if (isDefault) {
+      await db.query('UPDATE addresses SET is_default = FALSE WHERE user_id = ?', [userId]);
+    }
+
+    await db.query(
+      'UPDATE addresses SET label = ?, street = ?, number = ?, complement = ?, neighborhood = ?, city = ?, is_default = ? WHERE id = ?',
+      [label, street, number, complement, neighborhood, city, isDefault, id]
+    );
+    res.json({ id, ...req.body });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.deleteAddress = async (req, res) => {
   const { id } = req.params;
+  console.log('Tentando deletar endereço com ID:', id);
   try {
-    await db.query('DELETE FROM addresses WHERE id = ?', [id]);
+    const [result] = await db.query('DELETE FROM addresses WHERE id = ?', [id]);
+    console.log('Resultado da deleção:', result);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Endereço não encontrado' });
+    }
+    
     res.json({ message: 'Address deleted successfully' });
   } catch (error) {
+    console.error('Erro ao deletar endereço no banco:', error);
     res.status(500).json({ error: error.message });
   }
 };

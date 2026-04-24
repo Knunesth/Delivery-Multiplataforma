@@ -120,8 +120,24 @@ export async function createAddress(addressData: any) {
   }
 }
 
+export async function updateAddress(id: number, addressData: any) {
+  try {
+    const response = await fetch(`${API_URL}/addresses/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(addressData),
+    });
+    if (!response.ok) throw new Error('Falha ao atualizar endereço');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao atualizar endereço:', error);
+    throw error;
+  }
+}
+
 export async function deleteAddress(id: number) {
   try {
+    console.log(`Chamando DELETE ${API_URL}/addresses/${id}`);
     const response = await fetch(`${API_URL}/addresses/${id}`, {
       method: 'DELETE',
     });
