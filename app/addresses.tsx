@@ -141,6 +141,53 @@ export default function Addresses() {
     return <MapPin size={20} color={colors.primary} />;
   };
 
+  const renderForm = () => (
+    <View style={styles.modalContent}>
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>{editingId ? 'Editar Endereço' : 'Novo Endereço'}</Text>
+        <TouchableOpacity onPress={() => { setModalVisible(false); resetForm(); }}>
+          <Text style={styles.closeBtn}>Cancelar</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Text style={styles.inputLabel}>Identificação (ex: Casa, Trabalho)</Text>
+        <TextInput style={styles.input} value={label} onChangeText={setLabel} placeholder="Ex: Minha Casa" />
+
+        <Text style={styles.inputLabel}>Rua *</Text>
+        <TextInput style={styles.input} value={street} onChangeText={setStreet} placeholder="Nome da rua" />
+
+        <View style={styles.row}>
+          <View style={{ flex: 1, marginRight: Spacing.md }}>
+            <Text style={styles.inputLabel}>Número *</Text>
+            <TextInput style={styles.input} value={number} onChangeText={setNumber} placeholder="123" />
+          </View>
+          <View style={{ flex: 2 }}>
+            <Text style={styles.inputLabel}>Complemento</Text>
+            <TextInput style={styles.input} value={complement} onChangeText={setComplement} placeholder="Apto, Bloco, etc" />
+          </View>
+        </View>
+
+        <Text style={styles.inputLabel}>Bairro *</Text>
+        <TextInput style={styles.input} value={neighborhood} onChangeText={setNeighborhood} placeholder="Bairro" />
+
+        <Text style={styles.inputLabel}>Cidade *</Text>
+        <TextInput style={styles.input} value={city} onChangeText={setCity} placeholder="Cidade" />
+
+        <TouchableOpacity style={styles.defaultToggle} onPress={() => setIsDefault(!isDefault)}>
+          <View style={[styles.checkbox, isDefault && styles.checkboxActive]}>
+            {isDefault && <Check size={14} color={colors.white} />}
+          </View>
+          <Text style={styles.defaultToggleText}>Definir como endereço padrão</Text>
+        </TouchableOpacity>
+
+        <Button fullWidth style={styles.saveBtn} onPress={handleSaveAddress}>
+          {editingId ? 'Atualizar Endereço' : 'Salvar Endereço'}
+        </Button>
+      </ScrollView>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -228,92 +275,21 @@ export default function Addresses() {
       )}
 
       {/* Add Address Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{editingId ? 'Editar Endereço' : 'Novo Endereço'}</Text>
-              <TouchableOpacity onPress={() => { setModalVisible(false); resetForm(); }}>
-                <Text style={styles.closeBtn}>Cancelar</Text>
-              </TouchableOpacity>
+      {Platform.OS === 'web' ? (
+        modalVisible && (
+          <View style={[StyleSheet.absoluteFill, { zIndex: 1000 }]}>
+            <View style={styles.modalOverlay}>
+              {renderForm()}
             </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.inputLabel}>Identificação (ex: Casa, Trabalho)</Text>
-              <TextInput 
-                style={styles.input} 
-                value={label} 
-                onChangeText={setLabel} 
-                placeholder="Ex: Minha Casa"
-              />
-
-              <Text style={styles.inputLabel}>Rua *</Text>
-              <TextInput 
-                style={styles.input} 
-                value={street} 
-                onChangeText={setStreet} 
-                placeholder="Nome da rua"
-              />
-
-              <View style={styles.row}>
-                <View style={{ flex: 1, marginRight: Spacing.md }}>
-                  <Text style={styles.inputLabel}>Número *</Text>
-                  <TextInput 
-                    style={styles.input} 
-                    value={number} 
-                    onChangeText={setNumber} 
-                    placeholder="123"
-                  />
-                </View>
-                <View style={{ flex: 2 }}>
-                  <Text style={styles.inputLabel}>Complemento</Text>
-                  <TextInput 
-                    style={styles.input} 
-                    value={complement} 
-                    onChangeText={setComplement} 
-                    placeholder="Apto, Bloco, etc"
-                  />
-                </View>
-              </View>
-
-              <Text style={styles.inputLabel}>Bairro *</Text>
-              <TextInput 
-                style={styles.input} 
-                value={neighborhood} 
-                onChangeText={setNeighborhood} 
-                placeholder="Bairro"
-              />
-
-              <Text style={styles.inputLabel}>Cidade *</Text>
-              <TextInput 
-                style={styles.input} 
-                value={city} 
-                onChangeText={setCity} 
-                placeholder="Cidade"
-              />
-
-              <TouchableOpacity 
-                style={styles.defaultToggle} 
-                onPress={() => setIsDefault(!isDefault)}
-              >
-                <View style={[styles.checkbox, isDefault && styles.checkboxActive]}>
-                  {isDefault && <Check size={14} color={colors.white} />}
-                </View>
-                <Text style={styles.defaultToggleText}>Definir como endereço padrão</Text>
-              </TouchableOpacity>
-
-              <Button fullWidth style={styles.saveBtn} onPress={handleSaveAddress}>
-                {editingId ? 'Atualizar Endereço' : 'Salvar Endereço'}
-              </Button>
-            </ScrollView>
           </View>
-        </View>
-      </Modal>
+        )
+      ) : (
+        <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            {renderForm()}
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }

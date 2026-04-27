@@ -108,6 +108,61 @@ export default function Payments() {
     return <CreditCard size={24} color={colors.primary} />;
   };
 
+  const renderForm = () => (
+    <View style={styles.modalContent}>
+      <View style={styles.modalHeader}>
+        <Text style={styles.modalTitle}>Novo Pagamento</Text>
+        <TouchableOpacity onPress={() => { setModalVisible(false); resetForm(); }}>
+          <Text style={styles.closeBtn}>Cancelar</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <Text style={styles.inputLabel}>Tipo de Pagamento</Text>
+        <View style={styles.typeSelector}>
+          {['CREDITO', 'DEBITO', 'PIX', 'VA', 'VR'].map(t => (
+            <TouchableOpacity 
+              key={t}
+              style={[styles.typeOption, type === t && styles.typeOptionActive]}
+              onPress={() => setType(t)}
+            >
+              <Text style={[styles.typeText, type === t && styles.typeTextActive]}>{t}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {type !== 'PIX' && (
+          <>
+            <Text style={styles.inputLabel}>Apelido do Cartão</Text>
+            <TextInput style={styles.input} value={label} onChangeText={setLabel} placeholder="Ex: Cartão Roxinho" />
+
+            <View style={{flexDirection: 'row', gap: 10}}>
+              <View style={{flex: 1}}>
+                <Text style={styles.inputLabel}>Bandeira (Opcional)</Text>
+                <TextInput style={styles.input} value={brand} onChangeText={setBrand} placeholder="Ex: Master" />
+              </View>
+              <View style={{flex: 1}}>
+                <Text style={styles.inputLabel}>Últimos 4 Dígitos *</Text>
+                <TextInput style={styles.input} value={lastDigits} onChangeText={setLastDigits} placeholder="1234" maxLength={4} keyboardType="numeric" />
+              </View>
+            </View>
+          </>
+        )}
+
+        <TouchableOpacity style={styles.defaultToggle} onPress={() => setIsDefault(!isDefault)}>
+          <View style={[styles.checkbox, isDefault && styles.checkboxActive]}>
+            {isDefault && <Check size={14} color={colors.white} />}
+          </View>
+          <Text style={styles.defaultToggleText}>Definir pagamento como padrão</Text>
+        </TouchableOpacity>
+
+        <Button fullWidth style={styles.saveBtn} onPress={handleSavePayment}>
+          Salvar Método
+        </Button>
+      </ScrollView>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -164,62 +219,21 @@ export default function Payments() {
       )}
 
       {/* Add Modal */}
-      <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Novo Pagamento</Text>
-              <TouchableOpacity onPress={() => { setModalVisible(false); resetForm(); }}>
-                <Text style={styles.closeBtn}>Cancelar</Text>
-              </TouchableOpacity>
+      {Platform.OS === 'web' ? (
+        modalVisible && (
+          <View style={[StyleSheet.absoluteFill, { zIndex: 1000 }]}>
+            <View style={styles.modalOverlay}>
+              {renderForm()}
             </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.inputLabel}>Tipo de Pagamento</Text>
-              <View style={styles.typeSelector}>
-                {['CREDITO', 'DEBITO', 'PIX', 'VA', 'VR'].map(t => (
-                  <TouchableOpacity 
-                    key={t}
-                    style={[styles.typeOption, type === t && styles.typeOptionActive]}
-                    onPress={() => setType(t)}
-                  >
-                    <Text style={[styles.typeText, type === t && styles.typeTextActive]}>{t}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              {type !== 'PIX' && (
-                <>
-                  <Text style={styles.inputLabel}>Apelido do Cartão</Text>
-                  <TextInput style={styles.input} value={label} onChangeText={setLabel} placeholder="Ex: Cartão Roxinho" />
-
-                  <View style={{flexDirection: 'row', gap: 10}}>
-                    <View style={{flex: 1}}>
-                      <Text style={styles.inputLabel}>Bandeira (Opcional)</Text>
-                      <TextInput style={styles.input} value={brand} onChangeText={setBrand} placeholder="Ex: Master" />
-                    </View>
-                    <View style={{flex: 1}}>
-                      <Text style={styles.inputLabel}>Últimos 4 Dígitos *</Text>
-                      <TextInput style={styles.input} value={lastDigits} onChangeText={setLastDigits} placeholder="1234" maxLength={4} keyboardType="numeric" />
-                    </View>
-                  </View>
-                </>
-              )}
-
-              <TouchableOpacity style={styles.defaultToggle} onPress={() => setIsDefault(!isDefault)}>
-                <View style={[styles.checkbox, isDefault && styles.checkboxActive]}>
-                  {isDefault && <Check size={14} color={colors.white} />}
-                </View>
-                <Text style={styles.defaultToggleText}>Definir pagamento como padrão</Text>
-              </TouchableOpacity>
-
-              <Button fullWidth style={styles.saveBtn} onPress={handleSavePayment}>
-                Salvar Método
-              </Button>
-            </ScrollView>
           </View>
-        </View>
-      </Modal>
+        )
+      ) : (
+        <Modal animationType="slide" transparent={true} visible={modalVisible} onRequestClose={() => setModalVisible(false)}>
+          <View style={styles.modalOverlay}>
+            {renderForm()}
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }
