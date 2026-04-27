@@ -78,7 +78,7 @@ export default function ProductDetails() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header with Image */}
         <View style={styles.imageContainer}>
-          <Image source={{ uri: product.imageUrl }} style={styles.image} />
+          <Image source={{ uri: product.imageUrl }} style={styles.image} resizeMode="cover" />
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <ChevronLeft size={24} color={colors.textPrimary} />
           </TouchableOpacity>
@@ -186,8 +186,8 @@ const getStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
   },
   imageContainer: {
-    width: width,
-    height: width * 0.8,
+    width: '100%',
+    aspectRatio: 1.2,
     position: 'relative',
   },
   image: {

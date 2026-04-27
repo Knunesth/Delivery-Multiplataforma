@@ -104,10 +104,11 @@ const desktopStyles = StyleSheet.create({
     zIndex: 1,
   },
   heroTitle: {
-    fontSize: 72,
+    fontSize: 64,
     fontWeight: '900',
     marginBottom: 10,
     letterSpacing: -2,
+    flexWrap: 'nowrap',
   },
   heroSubtitle: {
     fontSize: 24,
