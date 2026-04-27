@@ -4,11 +4,14 @@ import { useRouter } from 'expo-router';
 import { ChevronLeft, Package, Clock, MapPin } from 'lucide-react-native';
 import { getUserOrders } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { Colors, Spacing, Radius, Shadows } from '../constants/Colors';
+import { usePreferences } from '../contexts/PreferencesContext';
+import { Spacing, Radius, Shadows } from '../constants/Colors';
 
 export default function Orders() {
   const router = useRouter();
   const { user } = useAuth();
+  const { colors } = usePreferences();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -45,7 +48,7 @@ export default function Orders() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <ChevronLeft size={24} color={Colors.textPrimary} />
+          <ChevronLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Meus Pedidos</Text>
         <View style={{ width: 40 }} />
@@ -53,11 +56,11 @@ export default function Orders() {
 
       {isLoading ? (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : orders.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Package size={64} color={Colors.textTertiary} />
+          <Package size={64} color={colors.textTertiary} />
           <Text style={styles.emptyTitle}>Nenhum pedido encontrado</Text>
           <Text style={styles.emptySubtitle}>Você ainda não realizou nenhum pedido sustentável.</Text>
           <TouchableOpacity style={styles.orderBtn} onPress={() => router.push('/home')}>
@@ -72,7 +75,7 @@ export default function Orders() {
                 <View>
                   <Text style={styles.orderId}>Pedido #{order.id}</Text>
                   <View style={styles.dateContainer}>
-                    <Clock size={12} color={Colors.textSecondary} />
+                    <Clock size={12} color={colors.textSecondary} />
                     <Text style={styles.orderDate}>{formatDate(order.date)}</Text>
                   </View>
                 </View>
@@ -92,7 +95,7 @@ export default function Orders() {
               {order.address && (
                 <View style={styles.addressSection}>
                   <View style={styles.addressHeader}>
-                    <MapPin size={16} color={Colors.primary} />
+                    <MapPin size={16} color={colors.primary} />
                     <Text style={styles.addressLabel}>Entregue em:</Text>
                   </View>
                   <View style={styles.addressContent}>
@@ -134,10 +137,10 @@ export default function Orders() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -145,9 +148,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     height: 60,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
   },
   backBtn: {
     width: 40,
@@ -157,7 +160,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   loader: {
     flex: 1,
@@ -173,24 +176,24 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginTop: Spacing.xl,
     marginBottom: Spacing.sm,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: Spacing.xl,
   },
   orderBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: Radius.md,
   },
   orderBtnText: {
-    color: Colors.white,
+    color: colors.white,
     fontWeight: '800',
     fontSize: 16,
   },
@@ -198,7 +201,7 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
   },
   orderCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderRadius: Radius.lg,
     padding: Spacing.xl,
     marginBottom: Spacing.lg,
@@ -210,12 +213,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingBottom: Spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
   },
   orderId: {
     fontSize: 16,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   dateContainer: {
     flexDirection: 'row',
@@ -224,7 +227,7 @@ const styles = StyleSheet.create({
   },
   orderDate: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginLeft: 4,
   },
   statusBadge: {
@@ -233,25 +236,25 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   statusPending: {
-    backgroundColor: '#FFF8E1',
+    backgroundColor: colors.primary + '20',
   },
   statusSuccess: {
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: colors.primary + '15',
   },
   statusText: {
     fontSize: 11,
     fontWeight: '800',
   },
   statusTextPending: {
-    color: '#FFA000',
+    color: colors.primaryDark,
   },
   statusTextSuccess: {
-    color: Colors.primary,
+    color: colors.primary,
   },
   addressSection: {
-    backgroundColor: '#F0F7FF',
+    backgroundColor: colors.surfaceHover,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: colors.primary,
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginVertical: Spacing.md,
@@ -265,7 +268,7 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
     fontSize: 12,
     fontWeight: '700',
-    color: Colors.primary,
+    color: colors.primary,
   },
   addressContent: {
     paddingLeft: Spacing.md,
@@ -273,11 +276,11 @@ const styles = StyleSheet.create({
   addressTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   addressText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 2,
   },
   itemsContainer: {
@@ -291,19 +294,19 @@ const styles = StyleSheet.create({
   itemQuantity: {
     fontSize: 14,
     fontWeight: '700',
-    color: Colors.primary,
+    color: colors.primary,
     width: 30,
   },
   itemName: {
     flex: 1,
     fontSize: 14,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     fontWeight: '500',
   },
   itemPrice: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   orderFooter: {
     flexDirection: 'row',
@@ -311,16 +314,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: Spacing.md,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
   },
   totalLabel: {
     fontSize: 16,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   totalValue: {
     fontSize: 18,
     fontWeight: '900',
-    color: Colors.primary,
+    color: colors.primary,
   }
 });

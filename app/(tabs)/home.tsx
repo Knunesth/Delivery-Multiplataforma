@@ -4,8 +4,10 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bell, Search as SearchIcon, Leaf, ChevronRight } from 'lucide-react-native';
 import { useCart } from '../../contexts/CartContext';
+import { usePreferences } from '../../contexts/PreferencesContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { ProductCard } from '../../components/ui/ProductCard';
-import { Colors, Spacing, Radius, Shadows } from '../../constants/Colors';
+import { Spacing, Radius, Shadows } from '../../constants/Colors';
 import { getProducts } from '../../services/api';
 
 const { width } = Dimensions.get('window');
@@ -21,9 +23,12 @@ const CATEGORIES = [
 export default function Home() {
   const router = useRouter();
   const { addToCart } = useCart();
+  const { colors } = usePreferences();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
   const [activeCategory, setActiveCategory] = useState('1');
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { unreadCount } = useNotifications();
 
   React.useEffect(() => {
     loadProducts();
@@ -56,13 +61,17 @@ export default function Home() {
             onPress={() => router.push('/search')}
             activeOpacity={0.9}
           >
-            <SearchIcon size={20} color={Colors.textTertiary} />
+            <SearchIcon size={20} color={colors.textTertiary} />
             <Text style={styles.searchPlaceholder}>O que você quer pedir hoje?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.notificationBtn}>
-            <Bell size={24} color={Colors.textPrimary} />
-            <View style={styles.badge} />
+          <TouchableOpacity 
+            style={styles.notificationBtn}
+            onPress={() => router.push('/notifications')}
+            activeOpacity={0.8}
+          >
+            <Bell size={24} color={colors.textPrimary} />
+            {unreadCount > 0 && <View style={styles.badge} />}
           </TouchableOpacity>
         </View>
       </View>
@@ -76,7 +85,7 @@ export default function Home() {
           style={styles.promoContainer}
         >
           <LinearGradient
-            colors={Colors.primaryGradient}
+            colors={colors.primaryGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.promoCard}
@@ -92,7 +101,7 @@ export default function Home() {
               </TouchableOpacity>
             </View>
             <View style={styles.promoIconContainer}>
-               <Leaf size={120} color={Colors.white} opacity={0.2} />
+               <Leaf size={120} color={colors.white} opacity={0.2} />
             </View>
           </LinearGradient>
         </ScrollView>
@@ -130,12 +139,12 @@ export default function Home() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Destaques Sustentáveis</Text>
             <TouchableOpacity>
-               <ChevronRight size={20} color={Colors.primary} />
+               <ChevronRight size={20} color={colors.primary} />
             </TouchableOpacity>
           </View>
           <View style={styles.productsGrid}>
             {isLoading ? (
-              <ActivityIndicator size="large" color={Colors.primary} style={{ flex: 1, marginTop: 20 }} />
+              <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1, marginTop: 20 }} />
             ) : (
               products.map(product => (
                 <ProductCard 
@@ -152,57 +161,59 @@ export default function Home() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   header: {
-    backgroundColor: Colors.white,
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.md,
-    borderBottomLeftRadius: Radius.xl,
-    borderBottomRightRadius: Radius.xl,
-    ...Shadows.medium,
+    paddingBottom: Spacing.lg,
+    paddingTop: Spacing.sm,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.md,
-    gap: Spacing.sm,
+    gap: Spacing.md,
   },
   notificationBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.surfaceHover,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border + '80',
+    ...Shadows.light,
   },
   badge: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.error,
-    borderWidth: 1.5,
-    borderColor: Colors.white,
+    top: 14,
+    right: 14,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.error,
+    borderWidth: 2,
+    borderColor: colors.surface,
   },
   searchBar: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surfaceHover,
-    height: 48,
-    borderRadius: Radius.md,
-    paddingHorizontal: Spacing.md,
+    backgroundColor: colors.surface,
+    height: 52,
+    borderRadius: Radius.full,
+    paddingHorizontal: Spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border + '80',
+    ...Shadows.light,
   },
   searchPlaceholder: {
     marginLeft: Spacing.sm,
-    color: Colors.textSecondary,
-    fontSize: 14,
+    color: colors.textSecondary,
+    fontSize: 15,
     fontWeight: '500',
   },
   scrollContent: {
@@ -213,18 +224,19 @@ const styles = StyleSheet.create({
   },
   promoCard: {
     width: width - (Spacing.lg * 2),
-    height: 180,
-    borderRadius: Radius.lg,
+    height: 200,
+    borderRadius: Radius.xl,
     padding: Spacing.xl,
     flexDirection: 'row',
     overflow: 'hidden',
+    ...Shadows.medium,
   },
   promoInfo: {
     flex: 1,
     justifyContent: 'center',
   },
   newBadge: {
-    backgroundColor: Colors.secondary,
+    backgroundColor: colors.secondary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: Radius.sm,
@@ -232,7 +244,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   newBadgeText: {
-    color: Colors.white,
+    color: colors.black,
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 0.5,
@@ -240,11 +252,11 @@ const styles = StyleSheet.create({
   promoTitle: {
     fontSize: 24,
     fontWeight: '900',
-    color: Colors.white,
+    color: colors.white,
     lineHeight: 28,
   },
   promoPrice: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: 18,
     fontWeight: '700',
     marginTop: 4,
@@ -255,17 +267,18 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   promoBtn: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: colors.white,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: Radius.full,
     alignSelf: 'flex-start',
-    marginTop: 12,
+    marginTop: 16,
+    ...Shadows.light,
   },
   promoBtnText: {
-    color: Colors.primary,
-    fontWeight: '800',
-    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '900',
+    fontSize: 13,
   },
   promoIconContainer: {
     position: 'absolute',
@@ -284,14 +297,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '900',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     letterSpacing: -0.5,
   },
   seeAllContainer: {
     padding: 4,
   },
   seeAll: {
-    color: Colors.primary,
+    color: colors.primary,
     fontWeight: '800',
     fontSize: 13,
   },
@@ -299,32 +312,32 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   categoryCard: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: Radius.md,
-    marginRight: Spacing.sm,
+    backgroundColor: colors.surface,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.full,
+    marginRight: Spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.border + '50',
     ...Shadows.light,
   },
   activeCategoryCard: {
-    backgroundColor: Colors.primary + '10',
-    borderColor: Colors.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   categoryIcon: {
-    fontSize: 20,
+    fontSize: 18,
     marginRight: 6,
   },
   categoryName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.textSecondary,
+    fontSize: 14,
+    fontWeight: '800',
+    color: colors.textSecondary,
   },
   activeCategoryName: {
-    color: Colors.primary,
+    color: colors.white,
   },
   productsGrid: {
     flexDirection: 'row',

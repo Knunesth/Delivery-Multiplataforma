@@ -3,7 +3,8 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Plus, Leaf, Star } from 'lucide-react-native';
-import { Colors, Spacing, Radius, Shadows } from '../../constants/Colors';
+import { Spacing, Radius, Shadows } from '../../constants/Colors';
+import { usePreferences } from '../../contexts/PreferencesContext';
 
 interface ProductCardProps {
   id: string;
@@ -17,6 +18,8 @@ interface ProductCardProps {
 
 export const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, rating, imageUrl, isEco, onAdd }) => {
   const router = useRouter();
+  const { colors } = usePreferences();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
 
   const formattedPrice = new Intl.NumberFormat('pt-BR', { 
     style: 'currency', 
@@ -37,14 +40,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, ratin
         />
         {isEco && (
           <LinearGradient
-            colors={Colors.primaryGradient}
+            colors={colors.primaryGradient}
             style={styles.ecoBadge}
           >
-            <Leaf size={10} color={Colors.white} />
+            <Leaf size={10} color={colors.white} />
           </LinearGradient>
         )}
         <View style={styles.ratingBadge}>
-          <Star size={10} color={Colors.secondary} fill={Colors.secondary} />
+          <Star size={10} color={colors.secondary} fill={colors.secondary} />
           <Text style={styles.ratingText}>{Number(rating || 0).toFixed(1)}</Text>
         </View>
       </View>
@@ -57,7 +60,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, ratin
             style={styles.addButton}
             onPress={onAdd}
           >
-            <Plus size={18} color={Colors.white} />
+            <Plus size={18} color={colors.white} />
           </TouchableOpacity>
         </View>
       </View>
@@ -65,10 +68,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ id, name, price, ratin
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   card: {
     width: '48%',
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderRadius: Radius.lg,
     marginBottom: Spacing.lg,
     ...Shadows.medium,
@@ -77,7 +80,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     height: 130,
-    backgroundColor: Colors.surfaceHover,
+    backgroundColor: colors.surfaceHover,
     position: 'relative',
   },
   image: {
@@ -96,7 +99,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 8,
     right: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: colors.glass,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: Radius.sm,
@@ -106,7 +109,7 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: 10,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginLeft: 2,
   },
   info: {
@@ -115,7 +118,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: 6,
     letterSpacing: -0.2,
   },
@@ -127,10 +130,10 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: '900',
-    color: Colors.primaryDark,
+    color: colors.primary,
   },
   addButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: Radius.md,
     padding: 4,
     ...Shadows.light,

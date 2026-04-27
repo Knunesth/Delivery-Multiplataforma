@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, FlatList, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TextInput, FlatList, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Search as SearchIcon, X, History, TrendingUp, Filter } from 'lucide-react-native';
-import { Colors, Spacing, Radius, Shadows } from '../../constants/Colors';
+import { Search as SearchIcon, X, History, TrendingUp, Filter, Star } from 'lucide-react-native';
+import { Spacing, Radius, Shadows } from '../../constants/Colors';
+import { usePreferences } from '../../contexts/PreferencesContext';
 import { getProducts } from '../../services/api';
 import { ProductCard } from '../../components/ui/ProductCard';
 import { useCart } from '../../contexts/CartContext';
@@ -13,6 +14,8 @@ const TRENDING = ['EcoBurger', 'Suco Detox', 'Embalagem Biodegradável'];
 export default function Search() {
   const [query, setQuery] = useState('');
   const { addToCart } = useCart();
+  const { colors } = usePreferences();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -45,23 +48,23 @@ export default function Search() {
       <View style={styles.header}>
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
-            <SearchIcon size={18} color={Colors.primary} />
+            <SearchIcon size={18} color={colors.primary} />
             <TextInput
               style={styles.input}
               placeholder="O que você quer pedir hoje?"
-              placeholderTextColor={Colors.textTertiary}
+              placeholderTextColor={colors.textTertiary}
               value={query}
               onChangeText={setQuery}
               autoFocus={false}
             />
             {query.length > 0 && (
               <TouchableOpacity onPress={() => setQuery('')}>
-                <X size={20} color={Colors.textTertiary} />
+                <X size={20} color={colors.textTertiary} />
               </TouchableOpacity>
             )}
           </View>
           <TouchableOpacity style={styles.filterBtn}>
-             <Filter size={20} color={Colors.textPrimary} />
+             <Filter size={20} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -72,14 +75,16 @@ export default function Search() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionIconBox}>
-                  <History size={16} color={Colors.primary} />
+                  <History size={16} color={colors.primary} />
                 </View>
                 <Text style={styles.sectionTitle}>Buscas Recentes</Text>
               </View>
               <View style={styles.chipContainer}>
                 {RECENT_SEARCHES.map(item => (
-                  <TouchableOpacity key={item} style={styles.chip} onPress={() => setQuery(item)}>
-                    <Text style={styles.chipText}>{item}</Text>
+                  <TouchableOpacity key={item} style={styles.chip} onPress={() => setQuery(item)} activeOpacity={0.7}>
+                    <View style={styles.chipGradient}>
+                      <Text style={styles.chipText}>{item}</Text>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -88,22 +93,42 @@ export default function Search() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={styles.sectionIconBox}>
-                  <TrendingUp size={16} color={Colors.primary} />
+                  <TrendingUp size={16} color={colors.primary} />
                 </View>
                 <Text style={styles.sectionTitle}>Tendências do Momento</Text>
               </View>
               <View style={styles.chipContainer}>
                 {TRENDING.map(item => (
-                  <TouchableOpacity key={item} style={styles.chip} onPress={() => setQuery(item)}>
-                    <LinearGradient
-                      colors={[Colors.white, '#F8F9FA']}
-                      style={styles.chipGradient}
-                    >
+                  <TouchableOpacity key={item} style={styles.chip} onPress={() => setQuery(item)} activeOpacity={0.7}>
+                    <View style={styles.chipGradient}>
                       <Text style={styles.chipText}>{item}</Text>
-                    </LinearGradient>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </View>
+            </View>
+
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionIconBox}>
+                  <Star size={16} color={colors.primary} />
+                </View>
+                <Text style={styles.sectionTitle}>Produtos Mais Pedidos</Text>
+              </View>
+              
+              {isLoading ? (
+                <ActivityIndicator size="small" color={colors.primary} style={{ marginTop: 20 }} />
+              ) : (
+                <View style={styles.productsGrid}>
+                  {products.slice(0, 2).map(product => (
+                    <ProductCard 
+                      key={product.id} 
+                      {...product} 
+                      onAdd={() => handleAddToCart(product)} 
+                    />
+                  ))}
+                </View>
+              )}
             </View>
           </>
         ) : (
@@ -138,46 +163,50 @@ export default function Search() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   header: {
-    padding: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderBottomLeftRadius: Radius.xl,
-    borderBottomRightRadius: Radius.xl,
-    ...Shadows.medium,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.lg,
+    paddingTop: Spacing.sm,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: Spacing.md,
   },
   searchBar: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surfaceHover,
-    paddingHorizontal: Spacing.md,
+    backgroundColor: colors.surfaceHover,
+    paddingHorizontal: Spacing.lg,
     height: 52,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderColor: colors.border + '50',
+    ...Shadows.light,
   },
   input: {
     flex: 1,
     marginLeft: Spacing.sm,
-    fontSize: 12,
-    color: Colors.textPrimary,
-    fontWeight: '600',
+    fontSize: 15,
+    color: colors.textPrimary,
+    fontWeight: '500',
   },
   filterBtn: {
     width: 52,
     height: 52,
-    borderRadius: Radius.lg,
-    backgroundColor: Colors.surfaceHover,
+    borderRadius: 26,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: Spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border + '50',
+    ...Shadows.light,
   },
   scrollContent: {
     padding: Spacing.lg,
@@ -195,7 +224,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: Radius.md,
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.sm,
@@ -203,7 +232,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     letterSpacing: -0.5,
   },
   chipContainer: {
@@ -213,18 +242,19 @@ const styles = StyleSheet.create({
   chip: {
     marginBottom: Spacing.sm,
     marginRight: Spacing.sm,
-    ...Shadows.light,
   },
   chipGradient: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border + '50',
+    backgroundColor: colors.surface,
+    ...Shadows.light,
   },
   chipText: {
     fontSize: 14,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     fontWeight: '600',
   },
   resultsContainer: {
@@ -235,11 +265,11 @@ const styles = StyleSheet.create({
   },
   resultsCount: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   boldText: {
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     fontWeight: '900',
   },
   productsGrid: {
@@ -258,7 +288,7 @@ const styles = StyleSheet.create({
   },
   noResultsText: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: Spacing.xl,
@@ -269,10 +299,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: Radius.full,
     borderWidth: 1.5,
-    borderColor: Colors.primary,
+    borderColor: colors.primary,
   },
   clearBtnText: {
-    color: Colors.primary,
+    color: colors.primary,
     fontWeight: '800',
     fontSize: 14,
   },

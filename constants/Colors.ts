@@ -1,4 +1,4 @@
-export const Colors = {
+export const LightTheme = {
   // Primary - Eco Green
   primary: '#2E7D32', 
   primaryLight: '#4CAF50',
@@ -32,6 +32,37 @@ export const Colors = {
   shadow: 'rgba(0, 0, 0, 0.08)',
   transparent: 'transparent',
 };
+
+export const DarkTheme = {
+  primary: '#4CAF50', 
+  primaryLight: '#81C784',
+  primaryDark: '#2E7D32',
+  primaryGradient: ['#1B5E20', '#388E3C'] as const,
+  
+  secondary: '#FFCA28', 
+  secondaryLight: '#FFE082',
+  
+  background: '#121212',
+  surface: '#181A19',
+  surfaceHover: '#222524',
+  
+  textPrimary: '#FFFFFF',
+  textSecondary: '#A0AAB2',
+  textTertiary: '#6C757D',
+  white: '#FFFFFF',
+  black: '#000000',
+  
+  error: '#EF5350',
+  success: '#4CAF50',
+  warning: '#FFCA28',
+  border: '#292D2B',
+  
+  glass: 'rgba(0, 0, 0, 0.4)',
+  shadow: 'rgba(0, 0, 0, 0.7)',
+  transparent: 'transparent',
+};
+
+export const Colors = LightTheme;
 
 export const Spacing = {
   xs: 4,

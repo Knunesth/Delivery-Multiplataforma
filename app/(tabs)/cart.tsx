@@ -5,13 +5,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Minus, Plus, Trash2, Leaf, ShoppingBag, ChevronRight } from 'lucide-react-native';
 import { useCart } from '../../contexts/CartContext';
 import { Button } from '../../components/ui/Button';
-import { Colors, Spacing, Radius, Shadows } from '../../constants/Colors';
+import { Spacing, Radius, Shadows } from '../../constants/Colors';
+import { usePreferences } from '../../contexts/PreferencesContext';
 
 const { height } = Dimensions.get('window');
 
 export default function Cart() {
   const router = useRouter();
   const { items, updateQuantity, isLoading } = useCart();
+  const { colors } = usePreferences();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
 
   const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const deliveryFee = 5.00;
@@ -37,12 +40,9 @@ export default function Cart() {
         </View>
         <View style={styles.emptyState}>
           <View style={styles.emptyIconContainer}>
-             <LinearGradient
-               colors={['#f1f3f5', '#e9ecef']}
-               style={styles.emptyIconGradient}
-             >
-               <ShoppingBag size={64} color={Colors.textTertiary} />
-             </LinearGradient>
+             <View style={styles.emptyIconGradient}>
+               <ShoppingBag size={64} color={colors.textTertiary} />
+             </View>
           </View>
           <Text style={styles.emptyTitle}>Carrinho vazio</Text>
           <Text style={styles.emptySubtitle}>Seus itens sustentáveis aparecerão aqui quando você os adicionar.</Text>
@@ -59,18 +59,15 @@ export default function Cart() {
       </View>
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <LinearGradient
-          colors={['#E8F5E9', '#FFFFFF']}
-          style={styles.ecoBanner}
-        >
-          <Leaf size={24} color={Colors.primary} fill={Colors.primary + '20'} />
+        <View style={styles.ecoBanner}>
+          <Leaf size={24} color={colors.primary} fill={colors.primary + '20'} />
           <View style={styles.ecoBannerTextContainer}>
             <Text style={styles.ecoBannerTitle}>Pedido Sustentável</Text>
             <Text style={styles.ecoBannerText}>
               Economia estimada de <Text style={styles.boldText}>200g</Text> de CO2.
             </Text>
           </View>
-        </LinearGradient>
+        </View>
 
         <Text style={styles.sectionTitle}>Seus Itens ({items.length})</Text>
 
@@ -89,7 +86,7 @@ export default function Cart() {
                 
                 {item.isEco && (
                   <View style={styles.itemEcoTag}>
-                    <Leaf size={10} color={Colors.primary} />
+                    <Leaf size={10} color={colors.primary} />
                     <Text style={styles.itemEcoText}>Ecológico</Text>
                   </View>
                 )}
@@ -102,9 +99,9 @@ export default function Cart() {
                       onPress={() => updateQuantity(item.id, -1)}
                     >
                       {item.quantity === 1 ? (
-                        <Trash2 size={14} color={Colors.error} />
+                        <Trash2 size={14} color={colors.error} />
                       ) : (
-                        <Minus size={14} color={Colors.textPrimary} />
+                        <Minus size={14} color={colors.textPrimary} />
                       )}
                     </TouchableOpacity>
                     <Text style={styles.qtyValue}>{item.quantity}</Text>
@@ -112,7 +109,7 @@ export default function Cart() {
                       style={styles.qtyBtn} 
                       onPress={() => updateQuantity(item.id, 1)}
                     >
-                      <Plus size={14} color={Colors.textPrimary} />
+                      <Plus size={14} color={colors.textPrimary} />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -156,33 +153,33 @@ export default function Cart() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: colors.background,
   },
   loadingText: {
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '600',
   },
   header: {
     height: 60,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     paddingHorizontal: Spacing.lg,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '900',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     letterSpacing: -0.5,
   },
   scrollContent: {
@@ -191,11 +188,12 @@ const styles = StyleSheet.create({
   ecoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: Spacing.lg,
-    borderRadius: Radius.lg,
+    padding: Spacing.xl,
+    borderRadius: Radius.xl,
     marginBottom: Spacing.xl,
     borderWidth: 1,
-    borderColor: Colors.primary + '20',
+    borderColor: colors.primary + '30',
+    backgroundColor: colors.primary + '0A',
   },
   ecoBannerTextContainer: {
     marginLeft: Spacing.md,
@@ -203,21 +201,21 @@ const styles = StyleSheet.create({
   ecoBannerTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: Colors.primaryDark,
+    color: colors.primaryDark,
   },
   ecoBannerText: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 2,
   },
   boldText: {
     fontWeight: '900',
-    color: Colors.primary,
+    color: colors.primary,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: Spacing.md,
     letterSpacing: -0.5,
   },
@@ -226,17 +224,19 @@ const styles = StyleSheet.create({
   },
   cartItem: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
-    borderRadius: Radius.lg,
-    padding: Spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: Radius.xl,
+    padding: Spacing.lg,
     marginBottom: Spacing.md,
     ...Shadows.medium,
+    borderWidth: 1,
+    borderColor: colors.border + '50',
   },
   itemImage: {
     width: 90,
     height: 90,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.surfaceHover,
+    borderRadius: Radius.lg,
+    backgroundColor: colors.surfaceHover,
   },
   itemInfo: {
     flex: 1,
@@ -250,14 +250,14 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 16,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     flex: 1,
     marginRight: 8,
   },
   itemPrice: {
     fontSize: 15,
     fontWeight: '900',
-    color: Colors.primaryDark,
+    color: colors.primaryDark,
   },
   itemEcoTag: {
     flexDirection: 'row',
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   itemEcoText: {
     fontSize: 11,
     fontWeight: '700',
-    color: Colors.primary,
+    color: colors.primary,
     marginLeft: 4,
   },
   itemActions: {
@@ -279,13 +279,13 @@ const styles = StyleSheet.create({
   },
   itemUnitPrice: {
     fontSize: 12,
-    color: Colors.textTertiary,
+    color: colors.textTertiary,
     fontWeight: '600',
   },
   quantityControl: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surfaceHover,
+    backgroundColor: colors.surfaceHover,
     borderRadius: Radius.full,
     padding: 2,
   },
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     ...Shadows.light,
@@ -302,18 +302,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     fontSize: 14,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   summary: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderRadius: Radius.xl,
     padding: Spacing.xl,
     ...Shadows.medium,
+    borderWidth: 1,
+    borderColor: colors.border + '50',
   },
   summarySectionTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: Spacing.lg,
   },
   summaryRow: {
@@ -327,30 +329,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   bikeBadge: {
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
     marginLeft: 8,
   },
   bikeText: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: 8,
     fontWeight: '900',
   },
   summaryLabel: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   summaryValue: {
     fontSize: 15,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     fontWeight: '700',
   },
   divider: {
     height: 1,
-    backgroundColor: Colors.border,
+    backgroundColor: colors.border,
     marginVertical: Spacing.md,
   },
   totalRow: {
@@ -361,12 +363,12 @@ const styles = StyleSheet.create({
   totalLabel: {
     fontSize: 20,
     fontWeight: '900',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   totalValue: {
     fontSize: 22,
     fontWeight: '900',
-    color: Colors.primary,
+    color: colors.primary,
   },
   emptyState: {
     flex: 1,
@@ -386,17 +388,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: colors.surfaceHover,
   },
   emptyTitle: {
     fontSize: 24,
     fontWeight: '900',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: Spacing.sm,
     letterSpacing: -0.5,
   },
   emptySubtitle: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: Spacing.xxl,
@@ -404,9 +407,11 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.lg,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xxl,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
+    ...Shadows.medium,
   },
 });

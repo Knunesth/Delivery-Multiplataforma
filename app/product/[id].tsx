@@ -4,7 +4,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, Star, Clock, Leaf, Minus, Plus, ShoppingCart } from 'lucide-react-native';
 import { getProductById } from '../../services/api';
 import { useCart } from '../../contexts/CartContext';
-import { Colors, Spacing, Radius, Shadows } from '../../constants/Colors';
+import { usePreferences } from '../../contexts/PreferencesContext';
+import { Spacing, Radius, Shadows } from '../../constants/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
@@ -13,6 +14,8 @@ export default function ProductDetails() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { addToCart } = useCart();
+  const { colors } = usePreferences();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
   
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +57,7 @@ export default function ProductDetails() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -77,11 +80,11 @@ export default function ProductDetails() {
         <View style={styles.imageContainer}>
           <Image source={{ uri: product.imageUrl }} style={styles.image} />
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <ChevronLeft size={24} color={Colors.textPrimary} />
+            <ChevronLeft size={24} color={colors.textPrimary} />
           </TouchableOpacity>
           {product.isEco && (
-            <LinearGradient colors={Colors.primaryGradient} style={styles.ecoBadge}>
-              <Leaf size={16} color={Colors.white} />
+            <LinearGradient colors={colors.primaryGradient} style={styles.ecoBadge}>
+              <Leaf size={16} color={colors.white} />
               <Text style={styles.ecoText}>Eco-Friendly</Text>
             </LinearGradient>
           )}
@@ -95,11 +98,11 @@ export default function ProductDetails() {
 
           <View style={styles.statsRow}>
             <View style={styles.stat}>
-              <Star size={16} color={Colors.secondary} fill={Colors.secondary} />
+              <Star size={16} color={colors.secondary} fill={colors.secondary} />
               <Text style={styles.statText}>{Number(product.rating).toFixed(1)} ({product.reviews} avaliações)</Text>
             </View>
             <View style={styles.stat}>
-              <Clock size={16} color={Colors.textTertiary} />
+              <Clock size={16} color={colors.textTertiary} />
               <Text style={styles.statText}>{product.time}</Text>
             </View>
           </View>
@@ -131,19 +134,19 @@ export default function ProductDetails() {
             style={styles.quantityBtn} 
             onPress={() => setQuantity(Math.max(1, quantity - 1))}
           >
-            <Minus size={20} color={Colors.textPrimary} />
+            <Minus size={20} color={colors.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.quantityText}>{quantity}</Text>
           <TouchableOpacity 
             style={styles.quantityBtn} 
             onPress={() => setQuantity(quantity + 1)}
           >
-            <Plus size={20} color={Colors.textPrimary} />
+            <Plus size={20} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
         <TouchableOpacity style={styles.addToCartBtn} onPress={handleAddToCart}>
-          <ShoppingCart size={20} color={Colors.white} />
+          <ShoppingCart size={20} color={colors.white} />
           <Text style={styles.addToCartText}>Adicionar • R$ {(product.price * quantity).toFixed(2)}</Text>
         </TouchableOpacity>
       </View>
@@ -151,10 +154,10 @@ export default function ProductDetails() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -170,16 +173,16 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 18,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: Spacing.lg,
   },
   backBtn: {
     padding: Spacing.md,
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: Radius.md,
   },
   backBtnText: {
-    color: Colors.white,
+    color: colors.white,
     fontWeight: '700',
   },
   imageContainer: {
@@ -198,7 +201,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: colors.glass,
     alignItems: 'center',
     justifyContent: 'center',
     ...Shadows.medium,
@@ -215,14 +218,14 @@ const styles = StyleSheet.create({
     ...Shadows.medium,
   },
   ecoText: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: 12,
     fontWeight: '800',
     marginLeft: 6,
   },
   content: {
     padding: Spacing.xl,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.background,
     borderTopLeftRadius: Radius.xl,
     borderTopRightRadius: Radius.xl,
     marginTop: -Radius.xl,
@@ -236,14 +239,14 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 24,
     fontWeight: '900',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     flex: 1,
     marginRight: Spacing.md,
   },
   price: {
     fontSize: 22,
     fontWeight: '900',
-    color: Colors.primary,
+    color: colors.primary,
   },
   statsRow: {
     flexDirection: 'row',
@@ -256,7 +259,7 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     fontWeight: '600',
     marginLeft: 6,
   },
@@ -266,12 +269,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: Spacing.sm,
   },
   description: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: 22,
   },
   ingredientsList: {
@@ -281,29 +284,29 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   ingredientBadge: {
-    backgroundColor: Colors.surfaceHover,
+    backgroundColor: colors.surfaceHover,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: Radius.md,
   },
   ingredientText: {
     fontSize: 13,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     fontWeight: '600',
   },
   bottomBar: {
     padding: Spacing.xl,
     paddingBottom: Spacing.xl + 10,
     flexDirection: 'row',
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
     gap: Spacing.lg,
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surfaceHover,
+    backgroundColor: colors.surfaceHover,
     borderRadius: Radius.md,
     paddingHorizontal: 4,
   },
@@ -313,12 +316,12 @@ const styles = StyleSheet.create({
   quantityText: {
     fontSize: 18,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     paddingHorizontal: 12,
   },
   addToCartBtn: {
     flex: 1,
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: Radius.md,
     flexDirection: 'row',
     alignItems: 'center',
@@ -327,7 +330,7 @@ const styles = StyleSheet.create({
     ...Shadows.medium,
   },
   addToCartText: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: 16,
     fontWeight: '900',
   },

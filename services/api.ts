@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 // Se estiver rodando no navegador, usa localhost.
 // Se estiver rodando no celular real ou emulador, precisa do IP da sua máquina.
 // Substitua o IP abaixo pelo IP da sua máquina (ex: 192.168.1.10) para testar no celular real.
-const localhost = '10.15.107.68'; // Tente trocar pelo seu IP se o localhost falhar no celular
+const localhost = '10.15.107.61'; // Tente trocar pelo seu IP se o localhost falhar no celular
 
 export const API_URL = `http://${localhost}:3000/api`;
 
@@ -164,3 +164,56 @@ export async function setDefaultAddress(id: number, userId: number) {
   }
 }
 
+export async function getPaymentMethods(userId: number) {
+  try {
+    const response = await fetch(`${API_URL}/payments/user/${userId}`);
+    if (!response.ok) throw new Error('Falha ao buscar métodos de pagamento');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro na API de pagamentos:', error);
+    return [];
+  }
+}
+
+export async function createPaymentMethod(paymentData: any) {
+  try {
+    const response = await fetch(`${API_URL}/payments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(paymentData),
+    });
+    if (!response.ok) throw new Error('Falha ao criar método de pagamento');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao criar método de pagamento:', error);
+    throw error;
+  }
+}
+
+export async function deletePaymentMethod(id: number) {
+  try {
+    const response = await fetch(`${API_URL}/payments/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Falha ao deletar método de pagamento');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao deletar método de pagamento:', error);
+    throw error;
+  }
+}
+
+export async function setDefaultPaymentMethod(id: number, userId: number) {
+  try {
+    const response = await fetch(`${API_URL}/payments/default`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, userId }),
+    });
+    if (!response.ok) throw new Error('Falha ao definir pagamento padrão');
+    return await response.json();
+  } catch (error) {
+    console.error('Erro ao definir pagamento padrão:', error);
+    throw error;
+  }
+}

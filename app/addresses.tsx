@@ -5,7 +5,8 @@ import { ChevronLeft, Plus, MapPin, Trash2, Home, Briefcase, Check, Pencil } fro
 import { getAddresses, createAddress, deleteAddress, setDefaultAddress } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useAddress } from '../contexts/AddressContext';
-import { Colors, Spacing, Radius, Shadows } from '../constants/Colors';
+import { usePreferences } from '../contexts/PreferencesContext';
+import { Spacing, Radius, Shadows } from '../constants/Colors';
 import { Button } from '../components/ui/Button';
 
 export default function Addresses() {
@@ -20,6 +21,8 @@ export default function Addresses() {
     deleteAddress: contextDeleteAddress,
     setDefaultAddress: contextSetDefaultAddress
   } = useAddress();
+  const { colors } = usePreferences();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   
@@ -133,9 +136,9 @@ export default function Addresses() {
   };
 
   const getIcon = (label: string) => {
-    if (label.toLowerCase() === 'home') return <Home size={20} color={Colors.primary} />;
-    if (label.toLowerCase() === 'work' || label.toLowerCase() === 'trabalho') return <Briefcase size={20} color={Colors.primary} />;
-    return <MapPin size={20} color={Colors.primary} />;
+    if (label.toLowerCase() === 'home') return <Home size={20} color={colors.primary} />;
+    if (label.toLowerCase() === 'work' || label.toLowerCase() === 'trabalho') return <Briefcase size={20} color={colors.primary} />;
+    return <MapPin size={20} color={colors.primary} />;
   };
 
   return (
@@ -145,21 +148,21 @@ export default function Addresses() {
           onPress={() => router.canGoBack() ? router.back() : router.replace('/home')} 
           style={styles.backBtn}
         >
-          <ChevronLeft size={24} color={Colors.textPrimary} />
+          <ChevronLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Meus Endereços</Text>
         <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
-          <Plus size={24} color={Colors.primary} />
+          <Plus size={24} color={colors.primary} />
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View style={styles.loader}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : addresses.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <MapPin size={64} color={Colors.textTertiary} />
+          <MapPin size={64} color={colors.textTertiary} />
           <Text style={styles.emptyTitle}>Nenhum endereço salvo</Text>
           <Text style={styles.emptySubtitle}>Adicione um endereço para facilitar seus pedidos.</Text>
           <Button style={styles.addBtnLarge} onPress={() => setModalVisible(true)}>
@@ -207,7 +210,7 @@ export default function Addresses() {
                     handleEditAddress(address);
                   }}
                 >
-                  <Pencil size={18} color={Colors.textSecondary} />
+                  <Pencil size={18} color={colors.textSecondary} />
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={[styles.actionBtn, { marginLeft: 8 }]} 
@@ -216,7 +219,7 @@ export default function Addresses() {
                     handleDeleteAddress(address.id);
                   }}
                 >
-                  <Trash2 size={18} color={Colors.error} />
+                  <Trash2 size={18} color={colors.error} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -299,7 +302,7 @@ export default function Addresses() {
                 onPress={() => setIsDefault(!isDefault)}
               >
                 <View style={[styles.checkbox, isDefault && styles.checkboxActive]}>
-                  {isDefault && <Check size={14} color={Colors.white} />}
+                  {isDefault && <Check size={14} color={colors.white} />}
                 </View>
                 <Text style={styles.defaultToggleText}>Definir como endereço padrão</Text>
               </TouchableOpacity>
@@ -315,10 +318,10 @@ export default function Addresses() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -326,9 +329,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     height: 60,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
   },
   backBtn: {
     width: 40,
@@ -338,7 +341,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   addBtn: {
     width: 40,
@@ -360,13 +363,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginTop: Spacing.xl,
     marginBottom: Spacing.sm,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: Spacing.xl,
   },
@@ -378,7 +381,7 @@ const styles = StyleSheet.create({
   },
   addressCard: {
     flexDirection: 'row',
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderRadius: Radius.lg,
     marginBottom: Spacing.md,
     alignItems: 'center',
@@ -399,18 +402,18 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     padding: 10,
-    backgroundColor: Colors.surfaceHover,
+    backgroundColor: colors.surfaceHover,
     borderRadius: Radius.full,
   },
   defaultCard: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary + '05',
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '05',
   },
   addressIconBox: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,
@@ -426,29 +429,29 @@ const styles = StyleSheet.create({
   addressLabel: {
     fontSize: 16,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginRight: 8,
   },
   defaultBadge: {
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: Radius.sm,
   },
   defaultBadgeText: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: 9,
     fontWeight: '900',
     textTransform: 'uppercase',
   },
   addressText: {
     fontSize: 14,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     fontWeight: '600',
   },
   addressSubtext: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 2,
   },
   modalOverlay: {
@@ -457,7 +460,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: Radius.xl,
     borderTopRightRadius: Radius.xl,
     padding: Spacing.xl,
@@ -472,25 +475,25 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '900',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   closeBtn: {
-    color: Colors.error,
+    color: colors.error,
     fontWeight: '700',
   },
   inputLabel: {
     fontSize: 14,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: 8,
     marginTop: 12,
   },
   input: {
-    backgroundColor: Colors.surfaceHover,
+    backgroundColor: colors.surfaceHover,
     borderRadius: Radius.md,
     padding: Spacing.md,
     fontSize: 15,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   row: {
     flexDirection: 'row',
@@ -506,19 +509,19 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
   checkboxActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   defaultToggleText: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   saveBtn: {
     marginTop: Spacing.xl,

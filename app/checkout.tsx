@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, CheckCircle2, Leaf, MapPin } from 'lucide-react-native';
+import { ChevronLeft, CheckCircle2, Leaf, MapPin, CreditCard, Smartphone, Banknote } from 'lucide-react-native';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { useAddress } from '../contexts/AddressContext';
+import { usePayment } from '../contexts/PaymentContext';
+import { usePreferences } from '../contexts/PreferencesContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import { createOrder } from '../services/api';
-import { Colors, Spacing, Radius, Shadows } from '../constants/Colors';
+import { Spacing, Radius, Shadows } from '../constants/Colors';
 import { Button } from '../components/ui/Button';
 
 export default function Checkout() {
@@ -14,9 +17,20 @@ export default function Checkout() {
   const { items, clearCart } = useCart();
   const { user } = useAuth();
   const { selectedAddress } = useAddress();
+  const { selectedPayment } = usePayment();
+  const { preferences, colors } = usePreferences();
+  const { addNotification } = useNotifications();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderAddress, setOrderAddress] = useState<any>(null);
+  const [wantCutlery, setWantCutlery] = useState(!preferences.noCutlery);
+
+  const getPaymentIcon = (type: string | undefined) => {
+    if (type === 'PIX') return <Smartphone size={20} color={colors.primary} />;
+    if (type === 'VA' || type === 'VR') return <Banknote size={20} color={colors.primary} />;
+    return <CreditCard size={20} color={colors.primary} />;
+  };
 
   const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const deliveryFee = 5.00;
@@ -29,10 +43,20 @@ export default function Checkout() {
         userId: user?.id || 1,
         items: items,
         total: total,
-        addressId: selectedAddress?.id
+        addressId: selectedAddress?.id,
+        paymentMethodId: selectedPayment?.id,
       });
       
       setOrderAddress(selectedAddress);
+      
+      // Envia a notificação Push Dinâmica Interna
+      addNotification({
+        title: 'Pedido Realizado! 🚀',
+        message: 'Seu pedido foi confirmado e nossa cozinha sustentável já começou a preparar. Acompanhe a entrega ecologicamente!',
+        type: 'order',
+        time: 'Agora mesmo'
+      });
+
       setIsSuccess(true);
       clearCart();
     } catch (error) {
@@ -47,7 +71,7 @@ export default function Checkout() {
       <SafeAreaView style={styles.container}>
         <View style={styles.successContainer}>
           <View style={styles.successIconWrapper}>
-            <CheckCircle2 size={80} color={Colors.primary} />
+            <CheckCircle2 size={80} color={colors.primary} />
           </View>
           <Text style={styles.successTitle}>Pedido Realizado!</Text>
           <Text style={styles.successSubtitle}>
@@ -57,7 +81,7 @@ export default function Checkout() {
           {orderAddress && (
             <View style={styles.successAddressCard}>
               <View style={styles.successAddressHeader}>
-                <MapPin size={18} color={Colors.primary} />
+                <MapPin size={18} color={colors.primary} />
                 <Text style={styles.successAddressLabel}>Entregue em:</Text>
               </View>
               <View style={styles.successAddressContent}>
@@ -77,10 +101,13 @@ export default function Checkout() {
             </View>
           )}
           
-          <View style={styles.ecoBadge}>
-            <Leaf size={16} color={Colors.primaryDark} />
-            <Text style={styles.ecoBadgeText}>Você salvou 200g de CO2 hoje!</Text>
-          </View>
+          {preferences.ecoTips && (
+            <View style={styles.ecoBadge}>
+              <Leaf size={16} color={colors.primaryDark} />
+              <Text style={styles.ecoBadgeText}>Você salvou 200g de CO2 hoje!</Text>
+            </View>
+          )}
+
           <Button fullWidth style={styles.homeBtn} onPress={() => router.replace('/home')}>
             Voltar para o Início
           </Button>
@@ -93,13 +120,13 @@ export default function Checkout() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <ChevronLeft size={24} color={Colors.textPrimary} />
+          <ChevronLeft size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Pagamento</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <View style={styles.content}>
+      <ScrollView style={styles.scrollArea} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.addressSection}>
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Endereço de Entrega</Text>
@@ -109,7 +136,7 @@ export default function Checkout() {
           </View>
           <View style={styles.addressCard}>
             <View style={styles.addressIconBox}>
-              <MapPin size={20} color={Colors.primary} />
+              <MapPin size={20} color={colors.primary} />
             </View>
             <View style={styles.addressInfo}>
               {selectedAddress ? (
@@ -145,33 +172,66 @@ export default function Checkout() {
           </View>
         </View>
 
-        <View style={styles.paymentMethod}>
-          <Text style={styles.sectionTitle}>Método de Pagamento</Text>
-          <View style={styles.methodItem}>
-            <View style={styles.methodIcon} />
-            <Text style={styles.methodText}>Pagamento na Entrega (Dinheiro/Cartão)</Text>
+        <View style={styles.addressSection}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Método de Pagamento</Text>
+            <TouchableOpacity onPress={() => router.push('/payments')}>
+              <Text style={styles.changeText}>Alterar</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.addressCard}>
+            <View style={styles.addressIconBox}>
+              {getPaymentIcon(selectedPayment?.type)}
+            </View>
+            <View style={styles.addressInfo}>
+              {selectedPayment ? (
+                <>
+                  <Text style={styles.addressLabel}>{selectedPayment.label}</Text>
+                  <Text style={styles.addressText}>
+                    {selectedPayment.type === 'PIX' ? 'Pagamento Instantâneo' : `${selectedPayment.type} •••• ${selectedPayment.last_digits}`}
+                  </Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.addressLabel}>Pagamento na Entrega</Text>
+                  <Text style={styles.addressText}>Dinheiro ou Cartão</Text>
+                </>
+              )}
+            </View>
           </View>
         </View>
 
-        <View style={styles.spacer} />
+        <View style={styles.cutlerySection}>
+           <Text style={styles.cutleryLabel}>Enviar Talheres Descartáveis?</Text>
+           <TouchableOpacity 
+              style={[styles.cutleryBtn, wantCutlery && styles.cutleryBtnActive]} 
+              onPress={() => setWantCutlery(!wantCutlery)}
+           >
+              <Text style={[styles.cutleryBtnText, wantCutlery && styles.cutleryBtnTextActive]}>
+                {wantCutlery ? 'Sim, enviar' : 'Não, ajude o planeta!'}
+              </Text>
+           </TouchableOpacity>
+        </View>
+      </ScrollView>
 
+      <View style={styles.footer}>
         <Button 
           fullWidth 
           size="lg" 
           onPress={handlePlaceOrder}
           disabled={isProcessing}
         >
-          {isProcessing ? <ActivityIndicator color={Colors.white} /> : 'Confirmar Pedido'}
+          {isProcessing ? <ActivityIndicator color={colors.white} /> : 'Confirmar Pedido'}
         </Button>
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -179,9 +239,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.lg,
     height: 60,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: colors.border,
   },
   backBtn: {
     width: 40,
@@ -191,14 +251,17 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
-  content: {
+  scrollArea: {
     flex: 1,
+  },
+  scrollContent: {
     padding: Spacing.lg,
+    paddingBottom: Spacing.xxl * 2,
   },
   card: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     borderRadius: Radius.lg,
     padding: Spacing.xl,
     ...Shadows.medium,
@@ -214,14 +277,14 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   changeText: {
-    color: Colors.primary,
+    color: colors.primary,
     fontWeight: '700',
     fontSize: 14,
   },
   addressCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     padding: Spacing.lg,
     borderRadius: Radius.lg,
     ...Shadows.medium,
@@ -230,7 +293,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,
@@ -241,21 +304,21 @@ const styles = StyleSheet.create({
   addressLabel: {
     fontSize: 15,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   addressText: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginTop: 2,
   },
   addressSubtext: {
     fontSize: 12,
-    color: Colors.textTertiary,
+    color: colors.textTertiary,
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: Spacing.lg,
   },
   row: {
@@ -265,28 +328,28 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   value: {
     fontSize: 14,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   totalRow: {
     marginTop: Spacing.md,
     paddingTop: Spacing.md,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
   },
   totalLabel: {
     fontSize: 18,
     fontWeight: '900',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
   totalValue: {
     fontSize: 18,
     fontWeight: '900',
-    color: Colors.primary,
+    color: colors.primary,
   },
   paymentMethod: {
     marginBottom: Spacing.xl,
@@ -294,40 +357,79 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: Spacing.md,
   },
   methodItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: colors.surface,
     padding: Spacing.lg,
     borderRadius: Radius.md,
     borderWidth: 2,
-    borderColor: Colors.primary,
+    borderColor: colors.primary,
   },
   methodIcon: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 6,
-    borderColor: Colors.primary,
+    borderColor: colors.primary,
     marginRight: Spacing.md,
   },
   methodText: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
   },
-  spacer: {
-    flex: 1,
+  cutlerySection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    padding: Spacing.xl,
+    borderRadius: Radius.lg,
+    ...Shadows.medium,
+  },
+  cutleryLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  cutleryBtn: {
+    borderWidth: 2,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: Radius.full,
+  },
+  cutleryBtnActive: {
+    borderColor: colors.error,
+    backgroundColor: colors.error + '10',
+  },
+  cutleryBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  cutleryBtnTextActive: {
+    color: colors.error,
+  },
+  footer: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xxl,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: Radius.xl,
+    borderTopRightRadius: Radius.xl,
+    ...Shadows.medium,
   },
   successContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: Spacing.huge,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.background,
   },
   successIconWrapper: {
     marginBottom: Spacing.xl,
@@ -335,13 +437,13 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 28,
     fontWeight: '900',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: Spacing.md,
     textAlign: 'center',
   },
   successSubtitle: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: Spacing.xl,
@@ -349,7 +451,7 @@ const styles = StyleSheet.create({
   ecoBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: colors.primary + '15',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: Radius.full,
@@ -359,12 +461,12 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     fontWeight: '700',
-    color: Colors.primaryDark,
+    color: colors.primaryDark,
   },
   successAddressCard: {
-    backgroundColor: '#F0F7FF',
+    backgroundColor: colors.surfaceHover,
     borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: colors.primary,
     borderRadius: Radius.md,
     padding: Spacing.lg,
     marginBottom: Spacing.xl,
@@ -379,7 +481,7 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.md,
     fontSize: 14,
     fontWeight: '700',
-    color: Colors.primary,
+    color: colors.primary,
   },
   successAddressContent: {
     paddingLeft: Spacing.lg,
@@ -387,12 +489,12 @@ const styles = StyleSheet.create({
   successAddressTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     marginBottom: Spacing.xs,
   },
   successAddressText: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     marginBottom: Spacing.xs,
     lineHeight: 18,
   },

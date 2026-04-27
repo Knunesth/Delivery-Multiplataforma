@@ -1,28 +1,31 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Home, Search, ShoppingBag, User } from 'lucide-react-native';
-import { Colors } from '../../constants/Colors';
 import { View, Text, StyleSheet } from 'react-native';
 import { useCart } from '../../contexts/CartContext';
+import { usePreferences } from '../../contexts/PreferencesContext';
 
 export default function TabLayout() {
   const { totalItems } = useCart();
+  const { colors } = usePreferences();
+  const styles = React.useMemo(() => getStyles(colors), [colors]);
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textTertiary,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textTertiary,
         tabBarStyle: {
           borderTopWidth: 1,
-          borderTopColor: Colors.border,
+          borderTopColor: colors.border,
           height: 80,
           paddingBottom: 20,
           paddingTop: 10,
-          backgroundColor: Colors.white,
+          backgroundColor: colors.surface,
           elevation: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -3 },
+
           shadowOpacity: 0.1,
           shadowRadius: 6,
         },
@@ -70,22 +73,22 @@ export default function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any) => StyleSheet.create({
   badge: {
     position: 'absolute',
     right: -6,
     top: -4,
-    backgroundColor: Colors.error,
+    backgroundColor: colors.error,
     borderRadius: 10,
     width: 18,
     height: 18,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: Colors.white,
+    borderColor: colors.surface,
   },
   badgeText: {
-    color: Colors.white,
+    color: colors.white,
     fontSize: 10,
     fontWeight: 'bold',
   },
