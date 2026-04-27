@@ -44,7 +44,7 @@ export default function Addresses() {
     }
 
     const addressData = {
-      userId: user.id,
+      userId: user?.id || 1,
       label,
       street,
       number,

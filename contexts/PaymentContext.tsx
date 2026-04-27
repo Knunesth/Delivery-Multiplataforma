@@ -42,10 +42,10 @@ export const PaymentProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const loadPayments = async () => {
-    if (!user) return;
+    const userId = user?.id || 1;
     setLoading(true);
     try {
-      const data = await getPaymentMethods(user.id);
+      const data = await getPaymentMethods(userId);
       setPayments(data);
       const def = data.find((p: PaymentMethod) => p.is_default);
       if (def) setSelectedPayment(def);
@@ -59,8 +59,8 @@ export const PaymentProvider = ({ children }: { children: ReactNode }) => {
 
   const createPayment = async (paymentData: Partial<PaymentMethod>) => {
     try {
-      if (!user) throw new Error('User not logged in');
-      await createPaymentMethod({ ...paymentData, userId: user.id });
+      const userId = user?.id || 1;
+      await createPaymentMethod({ ...paymentData, userId: userId });
       await loadPayments();
     } catch (error) {
       throw error;

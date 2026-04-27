@@ -49,6 +49,9 @@ exports.deleteAddress = async (req, res) => {
   const { id } = req.params;
   console.log('Tentando deletar endereço com ID:', id);
   try {
+    // Romper o vínculo com a tabela de orders (pedidos passados) para evitar erro de Constrição de Chave Estrangeira (FK Constraint)
+    await db.query('UPDATE orders SET address_id = NULL WHERE address_id = ?', [id]);
+
     const [result] = await db.query('DELETE FROM addresses WHERE id = ?', [id]);
     console.log('Resultado da deleção:', result);
     
