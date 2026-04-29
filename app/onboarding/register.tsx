@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, ActivityIndicator, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { User, Mail, Lock, ChevronLeft } from 'lucide-react-native';
+import { User, Mail, Lock, ChevronLeft, CheckCircle2 } from 'lucide-react-native';
 import { Colors, Spacing, Radius } from '../../constants/Colors';
 import { register } from '../../services/api';
 
@@ -17,6 +17,7 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleRegister = async () => {
     if (!name || !email || !password) {
@@ -27,9 +28,11 @@ export default function Register() {
     setIsLoading(true);
     try {
       await register({ name, email, password });
-      Alert.alert('Sucesso', 'Conta criada com sucesso!', [
-        { text: 'OK', onPress: () => router.replace('/onboarding/login') }
-      ]);
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        router.replace('/onboarding/login');
+      }, 2500);
     } catch (error: any) {
       Alert.alert('Erro no Cadastro', error.message || 'Não foi possível criar a conta');
     } finally {
@@ -105,6 +108,16 @@ export default function Register() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal visible={showSuccessModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <CheckCircle2 size={64} color={Colors.primary} />
+            <Text style={styles.modalTitle}>Sucesso!</Text>
+            <Text style={styles.modalText}>Conta criada com sucesso. Redirecionando...</Text>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -183,5 +196,36 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '700',
     fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    padding: Spacing.xl,
+    borderRadius: Radius.lg,
+    alignItems: 'center',
+    width: '80%',
+    maxWidth: 320,
+    elevation: 5,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  modalText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    textAlign: 'center',
   },
 });
