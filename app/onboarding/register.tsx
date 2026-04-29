@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { User, Mail, Lock, ChevronLeft, CheckCircle2 } from 'lucide-react-native';
+import { User, Mail, Lock, ChevronLeft, CheckCircle2, XCircle } from 'lucide-react-native';
 import { Colors, Spacing, Radius } from '../../constants/Colors';
 import { register } from '../../services/api';
 
@@ -18,6 +18,8 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleRegister = async () => {
     if (!name || !email || !password) {
@@ -34,7 +36,8 @@ export default function Register() {
         router.replace('/onboarding/login');
       }, 2500);
     } catch (error: any) {
-      Alert.alert('Erro no Cadastro', error.message || 'Não foi possível criar a conta');
+      setErrorMessage(error.message || 'Não foi possível criar a conta');
+      setShowErrorModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +118,22 @@ export default function Register() {
             <CheckCircle2 size={64} color={Colors.primary} />
             <Text style={styles.modalTitle}>Sucesso!</Text>
             <Text style={styles.modalText}>Conta criada com sucesso. Redirecionando...</Text>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={showErrorModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <XCircle size={64} color={Colors.error} />
+            <Text style={styles.modalTitle}>Ops!</Text>
+            <Text style={styles.modalText}>{errorMessage}</Text>
+            <TouchableOpacity 
+              style={styles.modalButton} 
+              onPress={() => setShowErrorModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Tentar Novamente</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -227,5 +246,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.textSecondary,
     textAlign: 'center',
+    marginBottom: Spacing.lg,
+  },
+  modalButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.full,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: Colors.white,
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions, ActivityIndicator, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
-import { Mail, Lock, ChevronLeft } from 'lucide-react-native';
+import { Mail, Lock, ChevronLeft, XCircle } from 'lucide-react-native';
 import { Colors, Spacing, Radius } from '../../constants/Colors';
 import { login as apiLogin } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -19,6 +19,8 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -32,7 +34,8 @@ export default function Login() {
       await login(data);
       router.replace('/home');
     } catch (error: any) {
-      Alert.alert('Erro no Login', error.message || 'Verifique suas credenciais');
+      setErrorMessage(error.message || 'Verifique suas credenciais');
+      setShowErrorModal(true);
     } finally {
       setIsLoading(false);
     }
@@ -95,6 +98,22 @@ export default function Login() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal visible={showErrorModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <XCircle size={64} color={Colors.error} />
+            <Text style={styles.modalTitle}>Ops!</Text>
+            <Text style={styles.modalText}>{errorMessage}</Text>
+            <TouchableOpacity 
+              style={styles.modalButton} 
+              onPress={() => setShowErrorModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Tentar Novamente</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -170,5 +189,50 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '700',
     fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    padding: Spacing.xl,
+    borderRadius: Radius.lg,
+    alignItems: 'center',
+    width: '80%',
+    maxWidth: 320,
+    elevation: 5,
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  modalText: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.lg,
+  },
+  modalButton: {
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.full,
+    width: '100%',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: Colors.white,
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
