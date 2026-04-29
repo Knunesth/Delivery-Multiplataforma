@@ -2,31 +2,39 @@ const db = require('../config/db');
 
 exports.createOrder = async (req, res) => {
   const { userId, items, total, addressId } = req.body;
+  const connection = await db.getConnection(); // Pega uma conexão específica do pool
+  
   try {
-    // Start transaction
-    await db.query('START TRANSACTION');
+    // Inicia a transação nesta conexão específica
+    await connection.beginTransaction();
 
-    const [orderResult] = await db.query(
+    const [orderResult] = await connection.query(
       'INSERT INTO orders (user_id, address_id, total, status) VALUES (?, ?, ?, ?)',
       [userId, addressId, total, 'pending']
     );
     
     const orderId = orderResult.insertId;
 
-    const itemPromises = items.map(item => {
-      return db.query(
+    // Insere todos os itens usando a mesma conexão
+    for (const item of items) {
+      await connection.query(
         'INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
         [orderId, item.id, item.quantity, item.price]
       );
-    });
+    }
 
-    await Promise.all(itemPromises);
-    await db.query('COMMIT');
+    // Finaliza a transação
+    await connection.commit();
 
     res.status(201).json({ id: orderId, message: 'Order created successfully' });
   } catch (error) {
-    await db.query('ROLLBACK');
+    // Se algo der errado, desfaz tudo
+    await connection.rollback();
+    console.error('Erro na transação de pedido:', error);
     res.status(500).json({ error: error.message });
+  } finally {
+    // Importante: Libera a conexão de volta para o pool
+    connection.release();
   }
 };
 
