@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Image, ActivityIndicator } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, Dimensions, Image, ActivityIndicator, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Bell, Search as SearchIcon, Leaf, ChevronRight } from 'lucide-react-native';
@@ -28,7 +28,9 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState('1');
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showToast, setShowToast] = useState(false);
   const { unreadCount } = useNotifications();
+  const slideAnim = useRef(new Animated.Value(-100)).current;
 
   React.useEffect(() => {
     loadProducts();
@@ -49,6 +51,21 @@ export default function Home() {
       imageUrl: product.imageUrl,
       isEco: product.isEco
     });
+
+    setShowToast(true);
+    Animated.spring(slideAnim, {
+      toValue: 20,
+      useNativeDriver: true,
+      speed: 12,
+    }).start();
+
+    setTimeout(() => {
+      Animated.timing(slideAnim, {
+        toValue: -100,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setShowToast(false));
+    }, 2000);
   };
 
   return (
@@ -157,6 +174,12 @@ export default function Home() {
           </View>
         </View>
       </ScrollView>
+
+      {showToast && (
+        <Animated.View style={[styles.toast, { transform: [{ translateY: slideAnim }] }]}>
+          <Text style={styles.toastText}>✅ Adicionado ao carrinho</Text>
+        </Animated.View>
+      )}
     </SafeAreaView>
   );
 }
@@ -343,5 +366,21 @@ const getStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+  },
+  toast: {
+    position: 'absolute',
+    top: 50,
+    alignSelf: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: Radius.full,
+    zIndex: 1000,
+    ...Shadows.medium,
+  },
+  toastText: {
+    color: colors.white,
+    fontWeight: '800',
+    fontSize: 14,
   },
 });
