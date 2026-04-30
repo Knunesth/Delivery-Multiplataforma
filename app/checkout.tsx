@@ -37,6 +37,16 @@ export default function Checkout() {
   const total = subtotal + deliveryFee;
 
   const handlePlaceOrder = async () => {
+    if (!selectedAddress) {
+      Alert.alert('Atenção', 'Por favor, selecione ou cadastre um endereço de entrega antes de finalizar o pedido.');
+      return;
+    }
+
+    if (items.length === 0) {
+      Alert.alert('Atenção', 'Seu carrinho está vazio.');
+      return;
+    }
+
     setIsProcessing(true);
     try {
       await createOrder({
@@ -59,8 +69,9 @@ export default function Checkout() {
 
       setIsSuccess(true);
       clearCart();
-    } catch (error) {
-      Alert.alert('Erro', 'Não foi possível finalizar seu pedido. Verifique sua conexão com o backend.');
+    } catch (error: any) {
+      console.error('Erro ao finalizar pedido:', error);
+      Alert.alert('Erro', error.message || 'Não foi possível finalizar seu pedido. Verifique sua conexão com o backend.');
     } finally {
       setIsProcessing(false);
     }

@@ -39,8 +39,14 @@ export async function createOrder(orderData: any) {
       },
       body: JSON.stringify(orderData),
     });
-    if (!response.ok) throw new Error('Falha ao criar pedido');
-    return await response.json();
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || data.message || 'Falha ao criar pedido');
+    }
+    
+    return data;
   } catch (error) {
     console.error('Erro na API de pedidos:', error);
     throw error;
