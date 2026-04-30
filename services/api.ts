@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 // Substitua o IP abaixo pelo IP da sua máquina (ex: 192.168.1.10) para testar no celular real.
 const localhost = '10.15.107.61'; // Tente trocar pelo seu IP se o localhost falhar no celular
 
-export const API_URL = 'https://ecodelivery-api.onrender.com/api';
+export const API_URL = 'https://ecodelivery-api.vercel.app/api';
 
 export async function getProducts() {
   try {
