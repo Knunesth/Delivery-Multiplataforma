@@ -27,6 +27,11 @@ export default function Register() {
       return;
     }
 
+    if (password.length < 6) {
+      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
     setIsLoading(true);
     try {
       await register({ name, email, password });
